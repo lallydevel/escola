@@ -1,0 +1,347 @@
+/* Variaveis globais de cor, sombra e espacamento.
+   Isso ajuda a manter o visual consistente no projeto inteiro. */
+:root {
+    --fundo: #f4f7fb;
+    --fundo-cartao: #ffffff;
+    --texto: #1d2939;
+    --texto-suave: #526072;
+    --borda: #d9e2ec;
+    --primaria: #1d4ed8;
+    --primaria-escura: #163ea8;
+    --sucesso: #1f8f5f;
+    --falta: #c0392b;
+    --atraso: #d97706;
+    --sombra: 0 20px 45px rgba(15, 23, 42, 0.08);
+    --raio: 18px;
+}
+
+/* Faz padding e border entrarem no calculo do tamanho total dos elementos. */
+* {
+    box-sizing: border-box;
+}
+
+/* Estilo geral do corpo da pagina. */
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--texto);
+    background:
+        radial-gradient(circle at top left, rgba(29, 78, 216, 0.12), transparent 30%),
+        linear-gradient(180deg, #f8fbff 0%, var(--fundo) 100%);
+}
+
+/* Container principal que centraliza o conteudo na tela. */
+.pagina {
+    width: min(1100px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 40px 0 56px;
+}
+
+/* Cabecalho inicial com duas colunas. */
+.hero {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+/* Texto pequeno usado nas etiquetas "Passo 1", "Passo 2" etc. */
+.etiqueta,
+.legenda {
+    margin: 0 0 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--primaria);
+}
+
+/* Remove margem padrao dos titulos. */
+.hero h1,
+.cartao h2 {
+    margin: 0;
+}
+
+/* Define tamanho responsivo do titulo principal. */
+.hero h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+}
+
+/* Estilo dos textos secundarios. */
+.subtitulo,
+.contador,
+.ajuda {
+    color: var(--texto-suave);
+}
+
+/* Estilo base usado nos cartoes da interface. */
+.hero-box,
+.cartao {
+    background: var(--fundo-cartao);
+    border: 1px solid rgba(217, 226, 236, 0.9);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+}
+
+/* Caixa lateral do topo com o resumo do fluxo. */
+.hero-box {
+    padding: 20px;
+    display: grid;
+    gap: 8px;
+    color: var(--texto-suave);
+}
+
+/* Destaca o texto mais importante dentro da caixa lateral. */
+.hero-box strong {
+    color: var(--texto);
+}
+
+/* Grade que organiza os dois primeiros cartoes lado a lado. */
+.grade {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+/* Espacamento interno padrao dos cartoes. */
+.cartao {
+    padding: 24px;
+}
+
+/* Area do topo de cada cartao. */
+.topo-cartao {
+    margin-bottom: 18px;
+}
+
+/* Versao em linha do topo, usada no cartao da tabela. */
+.topo-cartao-linha {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+/* Layout vertical dos formularios. */
+.formulario {
+    display: grid;
+    gap: 16px;
+}
+
+/* Cada label organiza texto e campo um abaixo do outro. */
+label {
+    display: grid;
+    gap: 8px;
+    font-weight: 600;
+}
+
+/* Faz os controles herdarem a mesma fonte do resto da pagina. */
+input,
+select,
+button {
+    font: inherit;
+}
+
+/* Estilo visual dos campos de entrada. */
+input,
+select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--borda);
+    background: #fff;
+}
+
+/* Destaque visual quando o usuario clica em um campo. */
+input:focus,
+select:focus {
+    outline: 2px solid rgba(29, 78, 216, 0.2);
+    border-color: var(--primaria);
+}
+
+/* Estilo base dos botoes. */
+.botao {
+    border: 0;
+    border-radius: 12px;
+    padding: 12px 18px;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+}
+
+/* Pequeno efeito ao passar o mouse. */
+.botao:hover {
+    transform: translateY(-1px);
+}
+
+/* Botao principal, usado nas acoes mais importantes. */
+.botao-principal {
+    background: var(--primaria);
+    color: #fff;
+}
+
+/* Cor do hover do botao principal. */
+.botao-principal:hover {
+    background: var(--primaria-escura);
+}
+
+/* Botao secundario, usado para acoes auxiliares. */
+.botao-secundario {
+    background: #eaf1ff;
+    color: var(--primaria);
+}
+
+/* Painel com os tres blocos de resumo. */
+.resumo {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* Estilo base de cada bloco do resumo. */
+.resumo-item {
+    padding: 16px;
+    border-radius: 16px;
+    color: #fff;
+    display: grid;
+    gap: 4px;
+}
+
+/* Numero maior dentro do bloco de resumo. */
+.resumo-item strong {
+    font-size: 1.8rem;
+}
+
+/* Cor do bloco de presentes. */
+.resumo-presente {
+    background: linear-gradient(135deg, #2fbf71, var(--sucesso));
+}
+
+/* Cor do bloco de faltas. */
+.resumo-falta {
+    background: linear-gradient(135deg, #ef5350, var(--falta));
+}
+
+/* Cor do bloco de atrasos. */
+.resumo-atraso {
+    background: linear-gradient(135deg, #f59e0b, var(--atraso));
+}
+
+/* Esconde qualquer excesso visual no cartao grande da tabela. */
+.cartao-tabela {
+    overflow: hidden;
+}
+
+/* Permite rolar horizontalmente se a tabela nao couber na tela. */
+.tabela-area {
+    overflow-x: auto;
+}
+
+/* Tabela ocupando toda a largura do cartao. */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Espacamento das celulas. */
+th,
+td {
+    padding: 16px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e8eef5;
+}
+
+/* Estilo do cabecalho da tabela. */
+th {
+    color: var(--texto-suave);
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Estilo da linha mostrada quando nao ha alunos. */
+.vazio {
+    text-align: center;
+    color: var(--texto-suave);
+    padding: 32px 12px;
+}
+
+/* Grupo dos botoes de status dentro da tabela. */
+.status-grupo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Estilo base dos botoes de presente, falta e atraso. */
+.status-botao {
+    border: 1px solid var(--borda);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--texto-suave);
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+/* Estado ativo do botao "presente". */
+.status-botao.ativo-presente {
+    background: rgba(31, 143, 95, 0.12);
+    color: var(--sucesso);
+    border-color: rgba(31, 143, 95, 0.2);
+}
+
+/* Estado ativo do botao "faltou". */
+.status-botao.ativo-faltou {
+    background: rgba(192, 57, 43, 0.12);
+    color: var(--falta);
+    border-color: rgba(192, 57, 43, 0.2);
+}
+
+/* Estado ativo do botao "atrasado". */
+.status-botao.ativo-atrasado {
+    background: rgba(217, 119, 6, 0.12);
+    color: var(--atraso);
+    border-color: rgba(217, 119, 6, 0.2);
+}
+
+/* Caixa padrao para mensagens de retorno. */
+.mensagem {
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+/* Visual da mensagem de sucesso. */
+.mensagem-sucesso {
+    background: rgba(31, 143, 95, 0.12);
+    color: var(--sucesso);
+}
+
+/* Visual da mensagem de erro. */
+.mensagem-erro {
+    background: rgba(192, 57, 43, 0.12);
+    color: var(--falta);
+}
+
+/* Classe usada para esconder a mensagem quando nao houver texto. */
+.mensagem-escondida {
+    display: none;
+}
+
+/* Regras para telas menores, deixando tudo em uma coluna. */
+@media (max-width: 860px) {
+    .hero,
+    .grade {
+        grid-template-columns: 1fr;
+    }
+
+    .topo-cartao-linha {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .resumo {
+        grid-template-columns: 1fr;
+    }
+}

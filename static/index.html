@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <!-- Define o padrao de caracteres da pagina. -->
+    <meta charset="UTF-8">
+
+    <!-- Faz a pagina se adaptar melhor em celular e tablet. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Titulo mostrado na aba do navegador. -->
+    <title>Lista de Chamada</title>
+
+    <!-- Importa o arquivo de estilos da pagina. -->
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <!-- main representa o conteudo principal da pagina. -->
+    <main class="pagina">
+        <!-- Cabecalho inicial com nome do projeto e resumo do fluxo. -->
+        <header class="hero">
+            <!-- Bloco de texto principal da apresentacao. -->
+            <div>
+                <p class="etiqueta">TRABALHO ESCOLAR</p>
+                <h1>Lista de Chamada</h1>
+                <p class="subtitulo">
+                    Projeto simples com HTML, CSS, JavaScript, API em Python e banco SQLite.
+                </p>
+            </div>
+
+            <!-- Caixa lateral com o fluxo resumido do sistema. -->
+            <div class="hero-box">
+                <strong>Fluxo:</strong>
+                <span>cadastro do aluno</span>
+                <span>marcacao da presenca</span>
+                <span>salvamento no banco</span>
+            </div>
+        </header>
+
+        <!-- Grade com dois cartoes principais: cadastro e filtros da chamada. -->
+        <section class="grade">
+            <!-- Cartao 1: formulario para cadastrar aluno. -->
+            <article class="cartao">
+                <div class="topo-cartao">
+                    <div>
+                        <p class="legenda">Passo 1</p>
+                        <h2>Cadastrar aluno</h2>
+                    </div>
+                </div>
+
+                <!-- Formulario enviado pelo JavaScript para a API. -->
+                <form id="form-aluno" class="formulario">
+                    <!-- Campo para digitar o nome do aluno. -->
+                    <label>
+                        Nome do aluno
+                        <input type="text" id="nome" name="nome" placeholder="Ex: Maria Silva" required>
+                    </label>
+
+                    <!-- Campo para informar a turma do aluno. -->
+                    <label>
+                        Turma
+                        <input type="text" id="turma" name="turma" placeholder="Ex: 3o Ano B" required>
+                    </label>
+
+                    <!-- Botao que cadastra o aluno. -->
+                    <button type="submit" class="botao botao-principal">Adicionar aluno</button>
+                </form>
+
+                <!-- Texto de orientacao para o usuario. -->
+                <p class="ajuda">
+                    Primeiro cadastre os alunos. Depois escolha a data e marque a chamada.
+                </p>
+            </article>
+
+            <!-- Cartao 2: configuracoes da chamada do dia. -->
+            <article class="cartao">
+                <div class="topo-cartao">
+                    <div>
+                        <p class="legenda">Passo 2</p>
+                        <h2>Montar a chamada</h2>
+                    </div>
+                </div>
+
+                <!-- Bloco com data da chamada, filtro de turma e atualizacao da lista. -->
+                <div class="formulario">
+                    <!-- Campo da data que sera enviada para a API. -->
+                    <label>
+                        Data da chamada
+                        <input type="date" id="data-chamada">
+                    </label>
+
+                    <!-- Select preenchido pelo JavaScript com as turmas existentes. -->
+                    <label>
+                        Filtrar por turma
+                        <select id="filtro-turma">
+                            <option value="">Todas as turmas</option>
+                        </select>
+                    </label>
+
+                    <!-- Botao para buscar novamente dados do servidor. -->
+                    <button type="button" id="atualizar-lista" class="botao botao-secundario">
+                        Atualizar lista
+                    </button>
+                </div>
+
+                <!-- Painel de resumo da chamada. -->
+                <div class="resumo" id="resumo">
+                    <!-- Total de presentes. -->
+                    <div class="resumo-item resumo-presente">
+                        <span>Presentes</span>
+                        <strong id="resumo-presente">0</strong>
+                    </div>
+
+                    <!-- Total de faltas. -->
+                    <div class="resumo-item resumo-falta">
+                        <span>Faltas</span>
+                        <strong id="resumo-falta">0</strong>
+                    </div>
+
+                    <!-- Total de atrasos. -->
+                    <div class="resumo-item resumo-atraso">
+                        <span>Atrasos</span>
+                        <strong id="resumo-atraso">0</strong>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- Cartao maior com a tabela da chamada. -->
+        <section class="cartao cartao-tabela">
+            <div class="topo-cartao topo-cartao-linha">
+                <div>
+                    <p class="legenda">Passo 3</p>
+                    <h2>Marcar presenca</h2>
+                    <p class="contador" id="contador-alunos">0 alunos carregados</p>
+                </div>
+
+                <!-- Botao final que salva toda a chamada no banco SQLite. -->
+                <button type="button" id="salvar-chamada" class="botao botao-principal">
+                    Salvar chamada
+                </button>
+            </div>
+
+            <!-- Area usada para mostrar mensagens de sucesso ou erro. -->
+            <div id="mensagem" class="mensagem mensagem-escondida"></div>
+
+            <!-- Bloco com rolagem horizontal para a tabela em telas menores. -->
+            <div class="tabela-area">
+                <table>
+                    <!-- Cabecalho da tabela. -->
+                    <thead>
+                        <tr>
+                            <th>Aluno</th>
+                            <th>Turma</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <!-- Corpo da tabela.
+                         O JavaScript substitui este conteudo dinamicamente. -->
+                    <tbody id="lista-alunos">
+                        <tr>
+                            <td colspan="3" class="vazio">Nenhum aluno cadastrado ainda.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Importa o JavaScript no final para a pagina carregar primeiro o HTML. -->
+    <script src="/app.js"></script>
+</body>
+</html>
