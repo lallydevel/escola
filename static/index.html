@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <!-- Define o padrao de caracteres da pagina. -->
     <meta charset="UTF-8">
@@ -13,27 +14,26 @@
     <!-- Importa o arquivo de estilos da pagina. -->
     <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
     <!-- main representa o conteudo principal da pagina. -->
     <main class="pagina">
         <!-- Cabecalho inicial com nome do projeto e resumo do fluxo. -->
-        <header class="hero">
-            <!-- Bloco de texto principal da apresentacao. -->
-            <div>
-                <p class="etiqueta">TRABALHO ESCOLAR</p>
-                <h1>Lista de Chamada</h1>
-                <p class="subtitulo">
-                    Projeto simples com HTML, CSS, JavaScript, API em Python e banco SQLite.
-                </p>
+        <header>
+            <div class="logo">
+                <a href="index.html">
+                    <h1>EduChamada</h1>
+                </a>
             </div>
 
-            <!-- Caixa lateral com o fluxo resumido do sistema. -->
-            <div class="hero-box">
-                <strong>Fluxo:</strong>
-                <span>cadastro do aluno</span>
-                <span>marcacao da presenca</span>
-                <span>salvamento no banco</span>
-            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Início</a></li>
+                    <li><a href="chamada.html">Realizar Chamada</a></li>
+                    <li><a href="cadastro.html">Cadastro</a></li>
+                    <li><a href="login.html">Login</a></li>
+                </ul>
+            </nav>
         </header>
 
         <!-- Grade com dois cartoes principais: cadastro e filtros da chamada. -->
@@ -131,22 +131,15 @@
                 <div>
                     <p class="legenda">Passo 3</p>
                     <h2>Marcar presenca</h2>
-                    <p class="contador" id="contador-alunos">0 alunos carregados</p>
+                    <p class="contador" id="contador-alunos">1 aluno carregado (Teste)</p>
                 </div>
-
-                <!-- Botao final que salva toda a chamada no banco SQLite. -->
                 <button type="button" id="salvar-chamada" class="botao botao-principal">
                     Salvar chamada
                 </button>
             </div>
 
-            <!-- Area usada para mostrar mensagens de sucesso ou erro. -->
-            <div id="mensagem" class="mensagem mensagem-escondida"></div>
-
-            <!-- Bloco com rolagem horizontal para a tabela em telas menores. -->
             <div class="tabela-area">
                 <table>
-                    <!-- Cabecalho da tabela. -->
                     <thead>
                         <tr>
                             <th>Aluno</th>
@@ -155,11 +148,27 @@
                         </tr>
                     </thead>
 
-                    <!-- Corpo da tabela.
-                         O JavaScript substitui este conteudo dinamicamente. -->
                     <tbody id="lista-alunos">
                         <tr>
-                            <td colspan="3" class="vazio">Nenhum aluno cadastrado ainda.</td>
+                            <td><strong>Nome do Aluno</strong></td>
+                            <td><span class="tag-turma">3º Ano B</span></td>
+                            <td>
+                                <div class="opcoes-presenca">
+<!--código de teste eu mudei o name para status-aluno1 para trocar aquele ID_ALUNO pelo ID real que vem do seu SQLite.-->
+                                    <label class="radio-status presente">
+                                        <input type="radio" name="status-aluno1" value="presente" checked>
+                                        <span>P</span>
+                                    </label>
+                                    <label class="radio-status falta">
+                                        <input type="radio" name="status-aluno1" value="falta">
+                                        <span>F</span>
+                                    </label>
+                                    <label class="radio-status atraso">
+                                        <input type="radio" name="status-aluno1" value="atraso">
+                                        <span>A</span>
+                                    </label>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -168,6 +177,39 @@
     </main>
 
     <!-- Importa o JavaScript no final para a pagina carregar primeiro o HTML. -->
+
+    <footer>
+        <section class="footer-content">
+            <div class="footer-section">
+                <h3>Sobre Nós</h3>
+                <p>Sistema dedicado à modernização e agilidade do registro de frequência escolar.</p>
+            </div>
+
+            <div class="footer-section">
+                <h3>Gestão</h3>
+                <ul>
+                    <li><a href="turmas.html">Lista de Turmas</a></li>
+                    <li><a href="relatorios.html">Relatórios Mensais</a></li>
+                    <li><a href="calendario.html">Calendário Acadêmico</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Suporte</h3>
+                <ul>
+                    <li><a href="ajuda.html">Central de Ajuda</a></li>
+                    <li><a href="contato.html">Fale Conosco</a></li>
+                </ul>
+            </div>
+        </section>
+
+        <hr>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 EduChamada - Todos os direitos reservados.</p>
+        </div>
+    </footer>
     <script src="/app.js"></script>
 </body>
+
 </html>

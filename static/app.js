@@ -343,3 +343,59 @@ elementos.dataChamada.value = dataHoje();
 atualizarTela().catch(() => {
     mostrarMensagem("Nao foi possivel carregar a lista de chamada.", "erro");
 });
+
+
+
+
+
+
+
+
+// NÃO SEI SE JÁ TEM Função para carregar alunos do banco de dados
+async function carregarAlunos() {
+    const listaAlunosCorpo = document.getElementById('lista-alunos');
+    const filtroTurma = document.getElementById('filtro-turma').value;
+
+    try {
+        // Substitua pela URL da sua API
+        const response = await fetch(`/api/alunos?turma=${filtroTurma}`);
+        const alunos = await response.json();
+
+        listaAlunosCorpo.innerHTML = ''; // Limpa a tabela
+
+        if (alunos.length === 0) {
+            listaAlunosCorpo.innerHTML = '<tr><td colspan="3" class="vazio">Nenhum aluno encontrado.</td></tr>';
+            return;
+        }
+
+        alunos.forEach(aluno => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${aluno.nome}</td>
+                <td>${aluno.turma}</td>
+                <td>
+                    <div class="actions">
+                        <label class="btn-check">
+                            <input type="radio" name="chamada-${aluno.id}" value="presente" checked> Presença
+                        </label>
+                        <label class="btn-check">
+                            <input type="radio" name="chamada-${aluno.id}" value="falta"> Falta
+                        </label>
+                        <label class="btn-check">
+                            <input type="radio" name="chamada-${aluno.id}" value="atraso"> Atraso
+                        </label>
+                    </div>
+                </td>
+            `;
+            listaAlunosCorpo.appendChild(tr);
+        });
+
+        document.getElementById('contador-alunos').innerText = `${alunos.length} alunos carregados`;
+
+    } catch (erro) {
+        console.error("Erro ao buscar alunos:", erro);
+    }
+}
+
+// Evento para o botão atualizar
+document.getElementById('atualizar-lista').addEventListener('click', carregarAlunos);
