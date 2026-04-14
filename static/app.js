@@ -399,3 +399,73 @@ async function carregarAlunos() {
 
 // Evento para o botão atualizar
 document.getElementById('atualizar-lista').addEventListener('click', carregarAlunos);
+
+
+
+
+// FUNÇÃO PARA SCROLL DAS PAGINAS
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+
+        if (targetElement) {
+            // Pegamos a posição do elemento menos 80px (altura do seu header)
+            const offsetPosition = targetElement.offsetTop - 80;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    });
+})
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+        }
+    });
+}, { threshold: 0.3 }); // Ativa quando 30% da seção estiver visível
+
+document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+        }
+    });
+}, { 
+    threshold: 0.2 // Ativa quando 20% da seção aparecer na tela
+});
+
+// Seleciona todos os elementos que têm a classe 'reveal' e começa a observar
+document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+
+// FUNÇÃO PAG CADASTRO DE ALUNO - RESPONSÁVEL
+document.getElementById('nascimento').addEventListener('change', function() {
+    const dataNascimento = new Date(this.value);
+    const hoje = new Date();
+    
+    let idade = hoje.getFullYear() - dataNascimento.getFullYear();
+    const m = hoje.getMonth() - dataNascimento.getMonth();
+    
+    // Ajuste caso o aniversário ainda não tenha ocorrido este ano
+    if (m < 0 || (m === 0 && hoje.getDate() < dataNascimento.getDate())) {
+        idade--;
+    }
+
+    const campoResp = document.getElementById('campo-responsavel');
+    const inputResp = document.getElementById('responsavel');
+
+    if (idade < 18) {
+        campoResp.classList.remove('hidden');
+        inputResp.setAttribute('required', 'true');
+    } else {
+        campoResp.classList.add('hidden');
+        inputResp.removeAttribute('required');
+    }
+});

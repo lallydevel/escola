@@ -1,0 +1,402 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding-top: 70px; /* Espaço exato para o header não cobrir nada */
+    overflow-x: hidden;
+    width: 100%;
+}
+
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    /* Mantenha o restante do seu estilo de header abaixo */
+}
+
+.hero-container {
+    position: relative;
+    width: 100%;
+    height: 100vh; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.hero-image {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    transform: translate(-50%, -50%);
+    z-index: -1;
+}
+
+.hero-text-box {
+    text-align: center;
+    color: #2c3e50; /* Cor escura para contrastar com o quadro branco */
+    padding: 20px;
+    z-index: 1;
+}
+
+.hero-text-box h1 {
+    font-size: clamp(2rem, 8vw, 4rem); /* Fonte responsiva: min, ideal, max */
+    font-weight: 800;
+    margin-bottom: 15px;
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+}
+
+.hero-text-box p {
+    font-size: clamp(1rem, 4vw, 1.5rem);
+    font-weight: 400;
+}
+
+
+@keyframes slideUpFade {
+    0% {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animacao-entrada {
+    animation: slideUpFade 1.2s ease-out forwards;
+}
+
+.animacao-sub-entrada {
+    opacity: 0;
+    animation: slideUpFade 1.2s ease-out 0.4s forwards; 
+}
+
+
+
+
+
+
+/* --- SEÇÃO----------- SOBRE ----------(FULL SCREEN) --- */
+.sessao-sobre {
+    width: 100%;
+    height: 100vh; /* Ocupa toda a tela */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #F9FAFB; /* Fundo levemente cinza para diferenciar do hero */
+    padding: 40px;
+    text-align: center;
+}
+
+.conteudo-sobre {
+    max-width: 800px;
+}
+
+.conteudo-sobre h2 {
+    color: #4F46E5;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+.conteudo-sobre p {
+    color: #4B5563;
+    font-size: 1.2rem;
+    line-height: 1.8;
+}
+
+/* --- ANIMAÇÃO AO SCROLL --- */
+.reveal {
+    opacity: 20;
+    transform: translateY(50px);
+    transition: all 1s ease-out;
+}
+
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* --- SEÇÃO CONTATO (FULL SCREEN) --- */
+.sessao-contato {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff; /* Alternando fundo para branco */
+    padding: 40px;
+    text-align: center;
+}
+
+.conteudo-contato {
+    max-width: 700px;
+}
+
+.conteudo-contato h2 {
+    color: #4F46E5;
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.subtitulo-contato {
+    color: #6B7280;
+    font-size: 1.1rem;
+    margin-bottom: 40px;
+}
+
+.cards-contato {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+
+.item-contato {
+    background: #F3F4F6;
+    padding: 20px 40px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    transition: transform 0.3s ease;
+}
+
+.item-contato:hover {
+    transform: translateY(-5px);
+    background: #EEF2FF;
+}
+
+.item-contato strong {
+    color: #4F46E5;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}
+
+.item-contato span {
+    color: #111827;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+/* Reutiliza a classe .reveal e .active já configuradas no Sobre */
+
+
+
+
+
+
+
+
+
+
+/* --- CABEÇALHO --- */
+header {
+  background: #FFFFFF;
+  padding: 15px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 16px; /* Mantendo o padrão dos cards */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  margin-bottom: 30px;
+}
+
+header .logo h1 {
+  margin-bottom: 0; /* Remove o margin do h1 base para alinhar verticalmente */
+  font-size: 22px;
+  color: #4F46E5;
+  letter-spacing: -0.5px;
+}
+
+header .logo a {
+  text-decoration: none;
+}
+
+header nav ul {
+  list-style: none;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+header nav ul li a {
+  text-decoration: none;
+  color: #4B5563;
+  font-weight: 500;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+header nav ul li a:hover {
+  color: #4F46E5;
+}
+
+/* Destaque para o link de Login ou Chamada (estilo botão) */
+header nav ul li a[href*="login"], 
+header nav ul li a[href*="cadastro"] {
+  background: #F3F4F6;
+  padding: 8px 16px;
+  border-radius: 10px;
+}
+
+header nav ul li a[href*="login"]:hover {
+  background: #EEF2FF;
+}
+
+
+
+
+
+
+
+
+
+/* --- FOOOOOOOTER --- */
+/* --- NOVO RODAPÉ SLIM --- */
+footer {
+    margin-top: auto; /* Empurra o footer para o fim da página se houver pouco conteúdo */
+    padding: 15px 0;
+    border-top: 1px solid #E5E7EB;
+    background-color: #ffffff;
+    width: 100%;
+}
+footer nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap; /* Garante que em celulares os links não sumam da tela */
+    gap: 20px;
+    font-size: 13px;
+    color: #9CA3AF;
+}
+
+
+footer nav a {
+    text-decoration: none;
+    color: #6B7280;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+footer nav a:hover {
+    color: #4F46E5; /* Cor de destaque ao passar o mouse */
+}
+
+footer nav span {
+    color: #9CA3AF;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+/* Ajuste para telas pequenas (Mobile) */
+@media (max-width: 600px) {
+    footer nav {
+        flex-direction: column; /* Empilha os links em telas muito pequenas */
+        gap: 10px;
+    }
+    footer nav span {
+        display: none; /* Esconde a frase em celulares muito pequenos para economizar espaço */
+    }
+}
+
+
+
+
+
+
+
+
+/** --- PAGINA DE CADASTRO --- */
+.pagina-cadastro {
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+    background-color: #F9FAFB;
+    min-height: calc(100vh - 140px);
+}
+
+.formulario-container {
+    background: #FFFFFF;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 650px;
+}
+
+.formulario-container h2 {
+    color: #4F46E5;
+    margin-bottom: 10px;
+}
+
+.formulario-container p {
+    color: #6B7280;
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+.grupo-input {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.linha-form {
+    display: flex;
+    gap: 15px;
+}
+
+.linha-form .grupo-input {
+    flex: 1;
+}
+
+label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+input, select {
+    padding: 12px;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 15px;
+    outline-color: #4F46E5;
+}
+
+.btn-cadastrar {
+    width: 100%;
+    padding: 14px;
+    background-color: #4F46E5;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-top: 10px;
+}
+
+.btn-cadastrar:hover {
+    background-color: #4338CA;
+}
+
+/* Esconder o campo do responsável por padrão */
+.hidden {
+    display: none;
+}
