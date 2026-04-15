@@ -1,0 +1,197 @@
+/*ESTILIZAÇÃO DA CHAMADA DE ALUNOS*/
+
+/*base geral da página*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f5f7fb;
+    color: #1f2937;
+}
+
+/*container principal*/
+.pagina {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.logo h1 {
+    color: #2563eb;
+}
+
+nav ul {
+    display: flex;
+    gap: 20px;
+    list-style: none;
+}
+
+nav a {
+    text-decoration: none;
+    color: #1f2937;
+    font-weight: 500;
+}
+
+nav a:hover {
+    color: #2563eb;
+}
+
+
+/*cartões*/
+.cartao {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+
+/*grade*/
+.grade {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+
+/*formulário*/
+.formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+input, select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+
+/*botões*/
+.botao {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.botao-principal {
+    background-color: #2563eb;
+    color: white;
+}
+
+.botao-principal:hover {
+    background-color: #1d4ed8;
+}
+
+.botao-secundario {
+    background-color: #e5e7eb;
+}
+
+
+
+/*resumo*/
+.resumo {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.resumo-item {
+    padding: 10px;
+    border-radius: 8px;
+    width: 30%;
+    text-align: center;
+    font-weight: bold;
+}
+
+.resumo-presente {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.resumo-falta {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.resumo-atraso {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+
+/*tabela*/
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+}
+
+thead {
+    background-color: #2563eb;
+    color: white;
+}
+
+tbody tr {
+    background: white;
+    border-bottom: 1px solid #eee;
+}
+
+
+
+/*status*/
+.opcoes-presenca {
+    display: flex;
+    gap: 8px;
+}
+
+.radio-status input {
+    display: none;
+}
+
+.radio-status span {
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.presente span {
+    background: #dcfce7;
+}
+
+.falta span {
+    background: #fee2e2;
+}
+
+.atraso span {
+    background: #fef3c7;
+}
+
+.radio-status input:checked + span {
+    outline: 2px solid #2563eb;
+}
+
+
+

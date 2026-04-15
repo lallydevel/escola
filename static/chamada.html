@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chamada - EduChamada</title>
+    <link rel="stylesheet" href="chamada.css">
+</head>
+
+<body>
+    <main class="pagina">
+
+        <!-- HEADER -->
+        <header>
+            <div class="logo">
+                <h1>EduChamada</h1>
+            </div>
+
+            <nav>
+                <ul>
+                    <li><a href="index.html">Início</a></li>
+                    <li><a href="chamada.html">Chamada</a></li>
+                    <li><a href="cadastro.html">Cadastro</a></li>
+                    <li><a href="login.html">Login</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <!-- CONFIGURAÇÕES -->
+        <section class="grade">
+
+            <article class="cartao">
+                <h2>Configurar chamada</h2>
+
+                <div class="formulario">
+                    <label>
+                        Data
+                        <input type="date" id="data-chamada">
+                    </label>
+
+                    <label>
+                        Turma
+                        <select id="filtro-turma">
+                            <option>Todas</option>
+                            <option>3º Ano A</option>
+                            <option>3º Ano B</option>
+                        </select>
+                    </label>
+
+                    <button class="botao botao-secundario">
+                        Atualizar lista
+                    </button>
+                </div>
+            </article>
+
+            <!-- RESUMO -->
+            <article class="cartao">
+                <h2>Resumo</h2>
+
+                <div class="resumo">
+                    <div class="resumo-item resumo-presente">
+                        <span>Presentes</span>
+                        <strong id="presente">0</strong>
+                    </div>
+
+                    <div class="resumo-item resumo-falta">
+                        <span>Faltas</span>
+                        <strong id="falta">0</strong>
+                    </div>
+
+                    <div class="resumo-item resumo-atraso">
+                        <span>Atrasos</span>
+                        <strong id="atraso">0</strong>
+                    </div>
+                </div>
+            </article>
+
+        </section>
+
+        <!-- TABELA -->
+        <section class="cartao cartao-tabela">
+            <h2>Lista de alunos</h2>
+
+            <div class="tabela-area">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aluno</th>
+                            <th>Turma</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <!-- ALUNO 1 -->
+                        <tr>
+                            <td><strong>Ana Silva</strong></td>
+                            <td><span class="tag-turma">3º Ano B</span></td>
+                            <td>
+                                <div class="opcoes-presenca">
+
+                                    <label class="radio-status presente">
+                                        <input type="radio" name="aluno1" checked>
+                                        <span>P</span>
+                                    </label>
+
+                                    <label class="radio-status falta">
+                                        <input type="radio" name="aluno1">
+                                        <span>F</span>
+                                    </label>
+
+                                    <label class="radio-status atraso">
+                                        <input type="radio" name="aluno1">
+                                        <span>A</span>
+                                    </label>
+
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- ALUNO 2 -->
+                        <tr>
+                            <td><strong>João Pedro</strong></td>
+                            <td><span class="tag-turma">3º Ano B</span></td>
+                            <td>
+                                <div class="opcoes-presenca">
+
+                                    <label class="radio-status presente">
+                                        <input type="radio" name="aluno2" checked>
+                                        <span>P</span>
+                                    </label>
+
+                                    <label class="radio-status falta">
+                                        <input type="radio" name="aluno2">
+                                        <span>F</span>
+                                    </label>
+
+                                    <label class="radio-status atraso">
+                                        <input type="radio" name="aluno2">
+                                        <span>A</span>
+                                    </label>
+
+                                </div>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+            <br>
+
+            <button class="botao botao-principal">
+                Salvar chamada
+            </button>
+
+        </section>
+
+    </main>
+</body>
+</html>
