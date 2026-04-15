@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduChamada</title>
+    <link rel="stylesheet" href="inicio.css">
+</head>
+
+<body>
+    <header>
+        <div class="logo">
+            <a href="inicio.html">
+                <h1>EduChamada</h1>
+            </a>
+        </div>
+
+        <nav>
+            <ul>
+                <li><a href="inicio.html">Início</a></li>
+                <li><a href="chamada.html">Realizar Chamada</a></li>
+                <li><a href="cadastro.html">Cadastro</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main class="pagina">
+        <section id="inicio" class="hero-container">
+            <div class="hero-overlay">
+                <img src="imagens/quadro.png" alt="Quadro Escolar" class="hero-image">
+                <div class="hero-text-box">
+                    <h1 class="animacao-entrada">Presença Digital</h1>
+                    <p class="animacao-sub-entrada">Escolha o tipo de registro abaixo:</p>
+                    <div class="hero-buttons animacao-sub-entrada">
+                        <a href="#cadastro-professor" class="btn-hero">Sou Professor</a>
+                        <a href="#cadastro-aluno" class="btn-hero btn-outline">Sou Aluno</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="cadastro-professor" class="sessao-sobre">
+            <div class="conteudo-sobre reveal">
+                <h2>Cadastro de LOGIN-Professor</h2>
+                <form class="form-padrao">
+                    <input type="text" placeholder="Nome Completo" required>
+                    <input type="email" placeholder="E-mail Institucional" required>
+                    <input type="password" placeholder="Defina sua Senha" required>
+                    <input type="text" placeholder="Disciplinas/Turmas" required>
+                    <button type="submit" class="btn-principal">Finalizar Cadastro Docente</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="cadastro-aluno" class="sessao-contato">
+            <div class="conteudo-contato reveal">
+                <h2>Cadastro de LOGIN-Aluno</h2>
+                <form class="form-padrao">
+                    <input type="text" placeholder="Nome do Aluno" required>
+                    <div class="linha-dupla">
+                        <input type="date" placeholder="Nascimento" required>
+                        <input type="text" placeholder="CPF" required>
+                    </div>
+                    <input type="text" placeholder="Turma" required>
+                    <input type="email" placeholder="E-mail" required>
+                    <input type="password" placeholder="Defina sua Senha" required>
+                    <button type="submit" class="btn-principal">Finalizar Cadastro Discente</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+
+    <footer>
+        <nav>
+            <a href="#sobre">Sobre</a>
+            <a href="#contato">Contato</a>
+
+            <span>| &copy; 2026 EduChamada - Gestão Inteligente |</span>
+
+            <a href="chamada.html">Turmas</a>
+            <a href="cadastro_aluno.html">Cadastro de Aluno</a>
+        </nav>
+    </footer>
+    <script src="app.js"></script>
+</body>
+
+</html>

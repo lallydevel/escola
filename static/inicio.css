@@ -19,7 +19,39 @@ header {
     z-index: 1000;
     /* Mantenha o restante do seu estilo de header abaixo */
 }
+.hero-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 25px;
+}
 
+.btn-hero {
+    padding: 12px 28px;
+    background-color: #4F46E5;
+    color: white;
+    border: none;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:  0.3s;
+}
+.btn-outline {
+    background-color: transparent;
+    border: 2px solid #4F46E5;
+    color: #4F46E5;
+}
+
+.btn-hero:hover {
+    transform: scale(1.05); /* Dá o zoom leve de 5% */
+    box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3); /* Sombra suave acompanhando a cor do botão */
+}
+
+/* Caso queira que ele diminua levemente ao clicar (efeito de clique real) */
+.btn-hero:active {
+    transform: scale(0.98);
+}
 .hero-container {
     position: relative;
     width: 100%;
@@ -81,8 +113,46 @@ header {
     animation: slideUpFade 1.2s ease-out 0.4s forwards; 
 }
 
+/* --- FORMULÁRIO DE CADASTRO DE LOGIN --- */
+/* Formulário herdando o tamanho das seções Sobre/Contato */
+.form-padrao {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 30px;
+    width: 100%;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
 
+.form-padrao input {
+    padding: 12px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 15px;
+}
 
+.linha-dupla {
+    display: flex;
+    gap: 10px;
+}
+
+.linha-dupla input {
+    flex: 1;
+}
+
+.btn-principal {
+    padding: 15px;
+    background: #4F46E5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+}
 
 
 
