@@ -55,6 +55,11 @@ function escapeHtml(texto) {
 // Mostra uma mensagem visual na tela.
 // O tipo pode ser "sucesso" ou "erro".
 function mostrarMensagem(texto, tipo = "sucesso") {
+    // O HTML atual nao possui caixa de mensagem; evitamos quebrar o JS.
+    if (!elementos.mensagem) {
+        return;
+    }
+
     elementos.mensagem.textContent = texto;
     elementos.mensagem.className = `mensagem mensagem-${tipo}`;
 }
@@ -62,6 +67,10 @@ function mostrarMensagem(texto, tipo = "sucesso") {
 
 // Esconde a caixa de mensagem quando nao houver nada para mostrar.
 function limparMensagem() {
+    if (!elementos.mensagem) {
+        return;
+    }
+
     elementos.mensagem.textContent = "";
     elementos.mensagem.className = "mensagem mensagem-escondida";
 }
@@ -342,130 +351,4 @@ elementos.dataChamada.value = dataHoje();
 // Tambem carregamos os dados iniciais.
 atualizarTela().catch(() => {
     mostrarMensagem("Nao foi possivel carregar a lista de chamada.", "erro");
-});
-
-
-
-
-
-
-
-
-// NÃO SEI SE JÁ TEM Função para carregar alunos do banco de dados
-async function carregarAlunos() {
-    const listaAlunosCorpo = document.getElementById('lista-alunos');
-    const filtroTurma = document.getElementById('filtro-turma').value;
-
-    try {
-        // Substitua pela URL da sua API
-        const response = await fetch(`/api/alunos?turma=${filtroTurma}`);
-        const alunos = await response.json();
-
-        listaAlunosCorpo.innerHTML = ''; // Limpa a tabela
-
-        if (alunos.length === 0) {
-            listaAlunosCorpo.innerHTML = '<tr><td colspan="3" class="vazio">Nenhum aluno encontrado.</td></tr>';
-            return;
-        }
-
-        alunos.forEach(aluno => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${aluno.nome}</td>
-                <td>${aluno.turma}</td>
-                <td>
-                    <div class="actions">
-                        <label class="btn-check">
-                            <input type="radio" name="chamada-${aluno.id}" value="presente" checked> Presença
-                        </label>
-                        <label class="btn-check">
-                            <input type="radio" name="chamada-${aluno.id}" value="falta"> Falta
-                        </label>
-                        <label class="btn-check">
-                            <input type="radio" name="chamada-${aluno.id}" value="atraso"> Atraso
-                        </label>
-                    </div>
-                </td>
-            `;
-            listaAlunosCorpo.appendChild(tr);
-        });
-
-        document.getElementById('contador-alunos').innerText = `${alunos.length} alunos carregados`;
-
-    } catch (erro) {
-        console.error("Erro ao buscar alunos:", erro);
-    }
-}
-
-// Evento para o botão atualizar
-document.getElementById('atualizar-lista').addEventListener('click', carregarAlunos);
-
-
-
-
-// FUNÇÃO PARA SCROLL DAS PAGINAS
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-
-        const targetId = this.getAttribute('href');
-        const targetElement = document.querySelector(targetId);
-
-        if (targetElement) {
-            // Pegamos a posição do elemento menos 80px (altura do seu header)
-            const offsetPosition = targetElement.offsetTop - 80;
-
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: 'smooth'
-            });
-        }
-    });
-})
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('active');
-        }
-    });
-}, { threshold: 0.3 }); // Ativa quando 30% da seção estiver visível
-
-document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('active');
-        }
-    });
-}, { 
-    threshold: 0.2 // Ativa quando 20% da seção aparecer na tela
-});
-
-// Seleciona todos os elementos que têm a classe 'reveal' e começa a observar
-document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
-
-// FUNÇÃO PAG CADASTRO DE ALUNO - RESPONSÁVEL
-document.getElementById('nascimento').addEventListener('change', function() {
-    const dataNascimento = new Date(this.value);
-    const hoje = new Date();
-    
-    let idade = hoje.getFullYear() - dataNascimento.getFullYear();
-    const m = hoje.getMonth() - dataNascimento.getMonth();
-    
-    // Ajuste caso o aniversário ainda não tenha ocorrido este ano
-    if (m < 0 || (m === 0 && hoje.getDate() < dataNascimento.getDate())) {
-        idade--;
-    }
-
-    const campoResp = document.getElementById('campo-responsavel');
-    const inputResp = document.getElementById('responsavel');
-
-    if (idade < 18) {
-        campoResp.classList.remove('hidden');
-        inputResp.setAttribute('required', 'true');
-    } else {
-        campoResp.classList.add('hidden');
-        inputResp.removeAttribute('required');
-    }
 });
