@@ -1,53 +1,18 @@
-/*ESTILIZAÇÃO DA CHAMADA DE ALUNOS*/
-
-/*base geral da página*/
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #f5f7fb;
-    color: #1f2937;
-}
 
 /*container principal*/
+body{
+    background-color: #d0ecffb5;
+}
 .pagina {
+    margin-top: 20px;
     max-width: 1100px;
-    margin: 0 auto;
+    margin: 10vh auto;
     padding: 20px;
 }
 
 
 
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
 
-.logo h1 {
-    color: #2563eb;
-}
-
-nav ul {
-    display: flex;
-    gap: 20px;
-    list-style: none;
-}
-
-nav a {
-    text-decoration: none;
-    color: #1f2937;
-    font-weight: 500;
-}
-
-nav a:hover {
-    color: #2563eb;
-}
 
 
 /*cartões*/

@@ -1,215 +1,82 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <!-- Define o padrao de caracteres da pagina. -->
     <meta charset="UTF-8">
-
-    <!-- Faz a pagina se adaptar melhor em celular e tablet. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Titulo mostrado na aba do navegador. -->
-    <title>Lista de Chamada</title>
-
-    <!-- Importa o arquivo de estilos da pagina. -->
-    <link rel="stylesheet" href="/style.css">
+    <title>EduChamada</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <!-- main representa o conteudo principal da pagina. -->
-    <main class="pagina">
-        <!-- Cabecalho inicial com nome do projeto e resumo do fluxo. -->
-        <header>
+    <header>
             <div class="logo">
-                <a href="inicio.html">
+                <a href="index.html">
                     <h1>EduChamada</h1>
                 </a>
             </div>
 
             <nav>
                 <ul>
-                    <li><a href="inicio.html">Início</a></li>
+                    <li><a href="index.html">Início</a></li>
                     <li><a href="chamada.html">Realizar Chamada</a></li>
                     <li><a href="cadastro.html">Cadastro</a></li>
                     <li><a href="login.html">Login</a></li>
                 </ul>
             </nav>
         </header>
-
-        <!-- Grade com dois cartoes principais: cadastro e filtros da chamada. -->
-        <section class="grade">
-            <!-- Cartao 1: formulario para cadastrar aluno. -->
-            <article class="cartao">
-                <div class="topo-cartao">
-                    <div>
-                        <p class="legenda">Passo 1</p>
-                        <h2>Cadastrar aluno</h2>
-                    </div>
+        <!-- main representa o conteudo principal da pagina. -->
+    <main class="pagina">
+        <section id="inicio" class="hero-container">
+            <div class="hero-overlay">
+                <img src="imagens/quadro.png" alt="Quadro Escolar" class="hero-image">
+                <div class="hero-text-box">
+                    <h1 class="animacao-entrada">Presença Digital: A Chamada do Futuro</h1>
+                    <p class="animacao-sub-entrada">Organização e praticidade para sua sala de aula.</p>
                 </div>
-
-                <!-- Formulario enviado pelo JavaScript para a API. -->
-                <form id="form-aluno" class="formulario">
-                    <!-- Campo para digitar o nome do aluno. -->
-                    <label>
-                        Nome do aluno
-                        <input type="text" id="nome" name="nome" placeholder="Ex: Maria Silva" required>
-                    </label>
-
-                    <!-- Campo para informar a turma do aluno. -->
-                    <label>
-                        Turma
-                        <input type="text" id="turma" name="turma" placeholder="Ex: 3o Ano B" required>
-                    </label>
-
-                    <!-- Botao que cadastra o aluno. -->
-                    <button type="submit" class="botao botao-principal">Adicionar aluno</button>
-                </form>
-
-                <!-- Texto de orientacao para o usuario. -->
-                <p class="ajuda">
-                    Primeiro cadastre os alunos. Depois escolha a data e marque a chamada.
-                </p>
-            </article>
-
-            <!-- Cartao 2: configuracoes da chamada do dia. -->
-            <article class="cartao">
-                <div class="topo-cartao">
-                    <div>
-                        <p class="legenda">Passo 2</p>
-                        <h2>Montar a chamada</h2>
-                    </div>
-                </div>
-
-                <!-- Bloco com data da chamada, filtro de turma e atualizacao da lista. -->
-                <div class="formulario">
-                    <!-- Campo da data que sera enviada para a API. -->
-                    <label>
-                        Data da chamada
-                        <input type="date" id="data-chamada">
-                    </label>
-
-                    <!-- Select preenchido pelo JavaScript com as turmas existentes. -->
-                    <label>
-                        Filtrar por turma
-                        <select id="filtro-turma">
-                            <option value="">Todas as turmas</option>
-                        </select>
-                    </label>
-
-                    <!-- Botao para buscar novamente dados do servidor. -->
-                    <button type="button" id="atualizar-lista" class="botao botao-secundario">
-                        Atualizar lista
-                    </button>
-                </div>
-
-                <!-- Painel de resumo da chamada. -->
-                <div class="resumo" id="resumo">
-                    <!-- Total de presentes. -->
-                    <div class="resumo-item resumo-presente">
-                        <span>Presentes</span>
-                        <strong id="resumo-presente">0</strong>
-                    </div>
-
-                    <!-- Total de faltas. -->
-                    <div class="resumo-item resumo-falta">
-                        <span>Faltas</span>
-                        <strong id="resumo-falta">0</strong>
-                    </div>
-
-                    <!-- Total de atrasos. -->
-                    <div class="resumo-item resumo-atraso">
-                        <span>Atrasos</span>
-                        <strong id="resumo-atraso">0</strong>
-                    </div>
-                </div>
-            </article>
-        </section>
-
-        <!-- Cartao maior com a tabela da chamada. -->
-        <section class="cartao cartao-tabela">
-            <div class="topo-cartao topo-cartao-linha">
-                <div>
-                    <p class="legenda">Passo 3</p>
-                    <h2>Marcar presenca</h2>
-                    <p class="contador" id="contador-alunos">1 aluno carregado (Teste)</p>
-                </div>
-                <button type="button" id="salvar-chamada" class="botao botao-principal">
-                    Salvar chamada
-                </button>
             </div>
-
-            <div class="tabela-area">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Aluno</th>
-                            <th>Turma</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="lista-alunos">
-                        <tr>
-                            <td><strong>Nome do Aluno</strong></td>
-                            <td><span class="tag-turma">3º Ano B</span></td>
-                            <td>
-                                <div class="opcoes-presenca">
-<!--código de teste eu mudei o name para status-aluno1 para trocar aquele ID_ALUNO pelo ID real que vem do seu SQLite.-->
-                                    <label class="radio-status presente">
-                                        <input type="radio" name="status-aluno1" value="presente" checked>
-                                        <span>P</span>
-                                    </label>
-                                    <label class="radio-status falta">
-                                        <input type="radio" name="status-aluno1" value="falta">
-                                        <span>F</span>
-                                    </label>
-                                    <label class="radio-status atraso">
-                                        <input type="radio" name="status-aluno1" value="atraso">
-                                        <span>A</span>
-                                    </label>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        </section>
+        <section id="sobre" class="sessao-sobre">
+            <div class="conteudo-sobre reveal">
+                <h2>Nossa Origem</h2>
+                <p>
+            Desenvolvido pela nova geração de talentos da turma de 
+            <strong>Desenvolvimento de Sistemas</strong> do programa 
+            <strong>Trilhas do Futuro</strong>. Este ecossistema digital 
+            foi concebido em Abril de 2026, unindo inovação acadêmica 
+            e soluções práticas para a gestão educacional moderna.
+                </p>
+            </div>
+        </section>
+        <section id="contato" class="sessao-contato">
+            <div class="conteudo-contato reveal">
+                <h2>Fale Conosco</h2>
+                <p class="subtitulo-contato">Dúvidas, sugestões ou feedbacks? Entre em contato por nossos canais oficiais:</p>
+        
+                <div class="cards-contato">
+                    <div class="item-contato">
+                        <strong>E-mail:</strong>
+                        <span>suporte@educhamada.com.br</span>
+                    </div>
+                    <div class="item-contato">
+                        <strong>Telefone:</strong>
+                        <span>(31) 99876-5432</span>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
-
-    <!-- Importa o JavaScript no final para a pagina carregar primeiro o HTML. -->
-
+    
     <footer>
-        <section class="footer-content">
-            <div class="footer-section">
-                <h3>Sobre Nós</h3>
-                <p>Sistema dedicado à modernização e agilidade do registro de frequência escolar.</p>
-            </div>
-
-            <div class="footer-section">
-                <h3>Gestão</h3>
-                <ul>
-                    <li><a href="turmas.html">Lista de Turmas</a></li>
-                    <li><a href="relatorios.html">Relatórios Mensais</a></li>
-                    <li><a href="calendario.html">Calendário Acadêmico</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-section">
-                <h3>Suporte</h3>
-                <ul>
-                    <li><a href="ajuda.html">Central de Ajuda</a></li>
-                    <li><a href="contato.html">Fale Conosco</a></li>
-                </ul>
-            </div>
-        </section>
-
-        <hr>
-
-        <div class="footer-bottom">
-            <p>&copy; 2026 EduChamada - Todos os direitos reservados.</p>
-        </div>
+    <nav>
+        <a href="#sobre">Sobre</a>
+        <a href="#contato">Contato</a>
+        
+        <span>| &copy; 2026 EduChamada - Gestão Inteligente |</span>
+        
+        <a href="chamada.html">Turmas</a>
+        <a href="cadastro_aluno.html">Cadastro de Aluno</a>
+    </nav>
     </footer>
-    <script src="/app.js"></script>
+    <script src="app.js"></script>
 </body>
-
 </html>

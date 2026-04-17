@@ -1,15 +1,15 @@
 /*FUNDO MAIS BONITO*/
-
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    
+}
 .login-container {
-    height: 100vh;
+    height: 80vh;
     display: flex;
     align-items: center;
     justify-content: center;
-
-    background: 
-        linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
-        url("quadro.png") no-repeat center center;
-
     background-size: cover;
 }
 

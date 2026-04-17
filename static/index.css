@@ -1,78 +1,3 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    padding-top: 70px; /* Espaço exato para o header não cobrir nada */
-    overflow-x: hidden;
-    width: 100%;
-}
-
-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-    /* Mantenha o restante do seu estilo de header abaixo */
-}
-.hero-buttons {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-top: 25px;
-}
-
-.btn-hero {
-    padding: 12px 28px;
-    background-color: #4F46E5;
-    color: white;
-    border: none;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition:  0.3s;
-}
-.btn-outline {
-    background-color: transparent;
-    border: 2px solid #4F46E5;
-    color: #4F46E5;
-}
-
-.btn-hero:hover {
-    transform: scale(1.05); /* Dá o zoom leve de 5% */
-    box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3); /* Sombra suave acompanhando a cor do botão */
-}
-
-/* Caso queira que ele diminua levemente ao clicar (efeito de clique real) */
-.btn-hero:active {
-    transform: scale(0.98);
-}
-.hero-container {
-    position: relative;
-    width: 100%;
-    height: 100vh; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-}
-
-.hero-image {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%;
-    height: 100%;
-    object-fit: cover; 
-    transform: translate(-50%, -50%);
-    z-index: -1;
-}
-
 .hero-text-box {
     text-align: center;
     color: #2c3e50; /* Cor escura para contrastar com o quadro branco */
@@ -203,7 +128,7 @@ header {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #ffffff; /* Alternando fundo para branco */
+        background-color: #d0ecffb5; /* Alternando fundo para branco */
     padding: 40px;
     text-align: center;
 }
@@ -232,7 +157,7 @@ header {
 }
 
 .item-contato {
-    background: #F3F4F6;
+    background: #ffffff;
     padding: 20px 40px;
     border-radius: 12px;
     width: 100%;
@@ -265,122 +190,6 @@ header {
 
 
 
-
-
-
-
-
-
-
-/* --- CABEÇALHO --- */
-header {
-  background: #FFFFFF;
-  padding: 15px 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-radius: 16px; /* Mantendo o padrão dos cards */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  margin-bottom: 30px;
-}
-
-header .logo h1 {
-  margin-bottom: 0; /* Remove o margin do h1 base para alinhar verticalmente */
-  font-size: 22px;
-  color: #4F46E5;
-  letter-spacing: -0.5px;
-}
-
-header .logo a {
-  text-decoration: none;
-}
-
-header nav ul {
-  list-style: none;
-  display: flex;
-  gap: 24px;
-  align-items: center;
-}
-
-header nav ul li a {
-  text-decoration: none;
-  color: #4B5563;
-  font-weight: 500;
-  font-size: 15px;
-  transition: 0.2s;
-}
-
-header nav ul li a:hover {
-  color: #4F46E5;
-}
-
-/* Destaque para o link de Login ou Chamada (estilo botão) */
-header nav ul li a[href*="login"], 
-header nav ul li a[href*="cadastro"] {
-  background: #F3F4F6;
-  padding: 8px 16px;
-  border-radius: 10px;
-}
-
-header nav ul li a[href*="login"]:hover {
-  background: #EEF2FF;
-}
-
-
-
-
-
-
-
-
-
-/* --- FOOOOOOOTER --- */
-/* --- NOVO RODAPÉ SLIM --- */
-footer {
-    margin-top: auto; /* Empurra o footer para o fim da página se houver pouco conteúdo */
-    padding: 15px 0;
-    border-top: 1px solid #E5E7EB;
-    background-color: #ffffff;
-    width: 100%;
-}
-footer nav {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap; /* Garante que em celulares os links não sumam da tela */
-    gap: 20px;
-    font-size: 13px;
-    color: #9CA3AF;
-}
-
-
-footer nav a {
-    text-decoration: none;
-    color: #6B7280;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-footer nav a:hover {
-    color: #4F46E5; /* Cor de destaque ao passar o mouse */
-}
-
-footer nav span {
-    color: #9CA3AF;
-    font-weight: 400;
-    letter-spacing: 0.5px;
-}
-
-/* Ajuste para telas pequenas (Mobile) */
-@media (max-width: 600px) {
-    footer nav {
-        flex-direction: column; /* Empilha os links em telas muito pequenas */
-        gap: 10px;
-    }
-    footer nav span {
-        display: none; /* Esconde a frase em celulares muito pequenos para economizar espaço */
-    }
-}
 
 
 
