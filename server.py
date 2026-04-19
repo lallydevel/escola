@@ -1,6 +1,11 @@
+import hashlib
 import json
+import mimetypes
+import secrets
 import sqlite3
+import traceback
 from datetime import date
+from http import cookies
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -13,6 +18,528 @@ HOST = "127.0.0.1"
 PORT = 8000
 
 STATUS_VALIDOS = {"presente", "faltou", "atrasado"}
+TIPOS_USUARIO = {"professor", "aluno"}
+SESSION_COOKIE = "educhamada_session"
+SESSOES = {}
+
+ROTAS_HTML = {
+    "/": "index.html",
+    "/index.html": "index.html",
+    "/inicio": "index.html",
+    "/inicio.html": "index.html",
+    "/login": "login.html",
+    "/login.html": "login.html",
+    "/cadastro": "cadastro.html",
+    "/cadastro.html": "cadastro.html",
+    "/cadastro-aluno": "cadastro_aluno.html",
+    "/cadastro_aluno.html": "cadastro_aluno.html",
+    "/chamada": "chamada.html",
+    "/chamada.html": "chamada.html",
+}
+
+mimetypes.add_type("application/javascript", ".js")
+mimetypes.add_type("image/avif", ".avif")
+
+APP_JS = r"""
+(() => {
+    const estadoChamada = {
+        alunos: [],
+        chamada: new Map(),
+    };
+
+    function textoSeguro(valor) {
+        return String(valor ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+    }
+
+    function dataHoje() {
+        const hoje = new Date();
+        const ano = String(hoje.getFullYear());
+        const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+        const dia = String(hoje.getDate()).padStart(2, "0");
+        return `${ano}-${mes}-${dia}`;
+    }
+
+    function criarCaixaMensagem(referencia) {
+        if (!referencia || referencia.__caixaMensagem) {
+            return referencia ? referencia.__caixaMensagem : null;
+        }
+
+        const caixa = document.createElement("div");
+        caixa.style.display = "none";
+        caixa.style.margin = "16px 0";
+        caixa.style.padding = "12px 14px";
+        caixa.style.borderRadius = "10px";
+        caixa.style.fontWeight = "600";
+        caixa.style.lineHeight = "1.4";
+        caixa.style.border = "1px solid transparent";
+        referencia.parentNode.insertBefore(caixa, referencia);
+        referencia.__caixaMensagem = caixa;
+        return caixa;
+    }
+
+    function mostrarMensagem(caixa, texto, tipo = "sucesso") {
+        if (!caixa) {
+            return;
+        }
+
+        caixa.textContent = texto;
+        caixa.style.display = "block";
+
+        if (tipo === "erro") {
+            caixa.style.background = "#fde8e8";
+            caixa.style.color = "#8a1c1c";
+            caixa.style.borderColor = "#f5b8b8";
+            return;
+        }
+
+        caixa.style.background = "#e7f7eb";
+        caixa.style.color = "#1f6b37";
+        caixa.style.borderColor = "#b7e2c4";
+    }
+
+    function limparMensagem(caixa) {
+        if (!caixa) {
+            return;
+        }
+
+        caixa.textContent = "";
+        caixa.style.display = "none";
+    }
+
+    async function lerJson(resposta) {
+        const texto = await resposta.text();
+        let dados = {};
+
+        if (texto) {
+            try {
+                dados = JSON.parse(texto);
+            } catch (erro) {
+                dados = {};
+            }
+        }
+
+        if (!resposta.ok) {
+            throw new Error(dados.erro || "Nao foi possivel concluir a operacao.");
+        }
+
+        return dados;
+    }
+
+    async function getJson(url) {
+        const resposta = await fetch(url, {
+            credentials: "same-origin",
+        });
+        return lerJson(resposta);
+    }
+
+    async function postJson(url, dados) {
+        const resposta = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify(dados),
+        });
+        return lerJson(resposta);
+    }
+
+    function bindLogin() {
+        const form = document.querySelector(".login-box .formulario");
+        if (!form) {
+            return;
+        }
+
+        const caixa = criarCaixaMensagem(form);
+        const campos = form.querySelectorAll("input");
+        const email = campos[0];
+        const senha = campos[1];
+
+        form.addEventListener("submit", async (evento) => {
+            evento.preventDefault();
+            limparMensagem(caixa);
+
+            try {
+                const dados = await postJson("/api/auth/login", {
+                    email: email.value.trim(),
+                    senha: senha.value,
+                });
+
+                mostrarMensagem(caixa, dados.mensagem || "Login realizado com sucesso.");
+                form.reset();
+                window.setTimeout(() => {
+                    window.location.href = "/chamada.html";
+                }, 300);
+            } catch (erro) {
+                mostrarMensagem(caixa, erro.message, "erro");
+            }
+        });
+    }
+
+    function bindCadastro() {
+        const formProfessor = document.querySelector("#cadastro-professor .form-padrao");
+        const formAluno = document.querySelector("#cadastro-aluno .form-padrao");
+
+        if (formProfessor) {
+            const caixaProfessor = criarCaixaMensagem(formProfessor);
+            const camposProfessor = formProfessor.querySelectorAll("input");
+
+            formProfessor.addEventListener("submit", async (evento) => {
+                evento.preventDefault();
+                limparMensagem(caixaProfessor);
+
+                try {
+                    const dados = await postJson("/api/auth/cadastro", {
+                        tipo: "professor",
+                        nome: camposProfessor[0].value.trim(),
+                        email: camposProfessor[1].value.trim(),
+                        senha: camposProfessor[2].value,
+                        disciplinas_turmas: camposProfessor[3].value.trim(),
+                    });
+
+                    mostrarMensagem(caixaProfessor, dados.mensagem || "Cadastro realizado com sucesso.");
+                    formProfessor.reset();
+                    window.setTimeout(() => {
+                        window.location.href = "/login.html";
+                    }, 500);
+                } catch (erro) {
+                    mostrarMensagem(caixaProfessor, erro.message, "erro");
+                }
+            });
+        }
+
+        if (formAluno) {
+            const caixaAluno = criarCaixaMensagem(formAluno);
+            const camposAluno = formAluno.querySelectorAll("input");
+
+            formAluno.addEventListener("submit", async (evento) => {
+                evento.preventDefault();
+                limparMensagem(caixaAluno);
+
+                try {
+                    const dados = await postJson("/api/auth/cadastro", {
+                        tipo: "aluno",
+                        nome: camposAluno[0].value.trim(),
+                        nascimento: camposAluno[1].value,
+                        cpf: camposAluno[2].value.trim(),
+                        turma: camposAluno[3].value.trim(),
+                        email: camposAluno[4].value.trim(),
+                        senha: camposAluno[5].value,
+                    });
+
+                    mostrarMensagem(caixaAluno, dados.mensagem || "Cadastro realizado com sucesso.");
+                    formAluno.reset();
+                    window.setTimeout(() => {
+                        window.location.href = "/login.html";
+                    }, 500);
+                } catch (erro) {
+                    mostrarMensagem(caixaAluno, erro.message, "erro");
+                }
+            });
+        }
+    }
+
+    function calcularIdade(dataNascimento) {
+        if (!dataNascimento) {
+            return Number.NaN;
+        }
+
+        const hoje = new Date();
+        const nascimento = new Date(`${dataNascimento}T00:00:00`);
+
+        if (Number.isNaN(nascimento.getTime())) {
+            return Number.NaN;
+        }
+
+        let idade = hoje.getFullYear() - nascimento.getFullYear();
+        const aindaNaoFezAniversario =
+            hoje.getMonth() < nascimento.getMonth() ||
+            (hoje.getMonth() === nascimento.getMonth() && hoje.getDate() < nascimento.getDate());
+
+        if (aindaNaoFezAniversario) {
+            idade -= 1;
+        }
+
+        return idade;
+    }
+
+    function bindCadastroAluno() {
+        const form = document.getElementById("formCadastro");
+        if (!form) {
+            return;
+        }
+
+        const caixa = criarCaixaMensagem(form);
+        const nome = document.getElementById("nome");
+        const nascimento = document.getElementById("nascimento");
+        const cpf = document.getElementById("cpf");
+        const turma = document.getElementById("turma");
+        const professor = document.getElementById("professor");
+        const endereco = document.getElementById("endereco");
+        const email = document.getElementById("email");
+        const responsavel = document.getElementById("responsavel");
+        const campoResponsavel = document.getElementById("campo-responsavel");
+
+        function atualizarCampoResponsavel() {
+            if (!campoResponsavel || !responsavel) {
+                return;
+            }
+
+            const idade = calcularIdade(nascimento ? nascimento.value : "");
+            const menorDeIdade = Number.isFinite(idade) && idade < 18;
+            campoResponsavel.classList.toggle("hidden", !menorDeIdade);
+            responsavel.required = menorDeIdade;
+
+            if (!menorDeIdade) {
+                responsavel.value = "";
+            }
+        }
+
+        if (nascimento) {
+            nascimento.addEventListener("change", atualizarCampoResponsavel);
+            atualizarCampoResponsavel();
+        }
+
+        form.addEventListener("submit", async (evento) => {
+            evento.preventDefault();
+            limparMensagem(caixa);
+
+            try {
+                const dados = await postJson("/api/alunos", {
+                    nome: nome ? nome.value.trim() : "",
+                    nascimento: nascimento ? nascimento.value : "",
+                    cpf: cpf ? cpf.value.trim() : "",
+                    turma: turma ? turma.value.trim() : "",
+                    professor: professor ? professor.value.trim() : "",
+                    endereco: endereco ? endereco.value.trim() : "",
+                    email: email ? email.value.trim() : "",
+                    responsavel: responsavel ? responsavel.value.trim() : "",
+                });
+
+                mostrarMensagem(caixa, dados.mensagem || "Aluno cadastrado com sucesso.");
+                form.reset();
+                atualizarCampoResponsavel();
+                window.setTimeout(() => {
+                    window.location.href = "/chamada.html";
+                }, 500);
+            } catch (erro) {
+                mostrarMensagem(caixa, erro.message, "erro");
+            }
+        });
+    }
+
+    function bindChamada() {
+        const dataChamada = document.getElementById("data-chamada");
+        const filtroTurma = document.getElementById("filtro-turma");
+        const tabela = document.querySelector(".tabela-area tbody");
+        const botaoAtualizar = document.querySelector(".botao-secundario");
+        const botaoSalvar = document.querySelector(".botao-principal");
+        const resumoPresente = document.getElementById("presente");
+        const resumoFalta = document.getElementById("falta");
+        const resumoAtraso = document.getElementById("atraso");
+        const cartaoTabela = document.querySelector(".cartao-tabela");
+
+        if (!dataChamada || !filtroTurma || !tabela || !botaoAtualizar || !botaoSalvar) {
+            return;
+        }
+
+        const caixa = criarCaixaMensagem(cartaoTabela || tabela);
+
+        function statusAtual(alunoId) {
+            return estadoChamada.chamada.get(alunoId) || "presente";
+        }
+
+        function alunosFiltrados() {
+            const turmaSelecionada = filtroTurma.value;
+
+            if (!turmaSelecionada) {
+                return estadoChamada.alunos;
+            }
+
+            return estadoChamada.alunos.filter((aluno) => aluno.turma === turmaSelecionada);
+        }
+
+        function preencherTurmas(turmas) {
+            const turmaAtual = filtroTurma.value && filtroTurma.value !== "Todas" ? filtroTurma.value : "";
+            filtroTurma.innerHTML = "";
+
+            const opcaoPadrao = document.createElement("option");
+            opcaoPadrao.value = "";
+            opcaoPadrao.textContent = "Todas as turmas";
+            filtroTurma.appendChild(opcaoPadrao);
+
+            turmas.forEach((turma) => {
+                const option = document.createElement("option");
+                option.value = turma;
+                option.textContent = turma;
+                filtroTurma.appendChild(option);
+            });
+
+            filtroTurma.value = turmas.includes(turmaAtual) ? turmaAtual : "";
+        }
+
+        function renderizarResumo() {
+            const resumo = { presente: 0, faltou: 0, atrasado: 0 };
+
+            alunosFiltrados().forEach((aluno) => {
+                resumo[statusAtual(aluno.id)] += 1;
+            });
+
+            if (resumoPresente) {
+                resumoPresente.textContent = String(resumo.presente);
+            }
+
+            if (resumoFalta) {
+                resumoFalta.textContent = String(resumo.faltou);
+            }
+
+            if (resumoAtraso) {
+                resumoAtraso.textContent = String(resumo.atrasado);
+            }
+        }
+
+        function opcaoStatus(alunoId, valor, rotulo, classe) {
+            const checked = statusAtual(alunoId) === valor ? "checked" : "";
+            return `
+                <label class="radio-status ${classe}">
+                    <input type="radio" name="aluno-${alunoId}" data-aluno-id="${alunoId}" value="${valor}" ${checked}>
+                    <span>${rotulo}</span>
+                </label>
+            `;
+        }
+
+        function renderizarTabela() {
+            const alunos = alunosFiltrados();
+
+            if (alunos.length === 0) {
+                tabela.innerHTML = `
+                    <tr>
+                        <td colspan="3"><strong>Nenhum aluno cadastrado para esta visualizacao.</strong></td>
+                    </tr>
+                `;
+                renderizarResumo();
+                return;
+            }
+
+            tabela.innerHTML = alunos
+                .map((aluno) => `
+                    <tr>
+                        <td><strong>${textoSeguro(aluno.nome)}</strong></td>
+                        <td><span class="tag-turma">${textoSeguro(aluno.turma)}</span></td>
+                        <td>
+                            <div class="opcoes-presenca">
+                                ${opcaoStatus(aluno.id, "presente", "P", "presente")}
+                                ${opcaoStatus(aluno.id, "faltou", "F", "falta")}
+                                ${opcaoStatus(aluno.id, "atrasado", "A", "atraso")}
+                            </div>
+                        </td>
+                    </tr>
+                `)
+                .join("");
+
+            renderizarResumo();
+        }
+
+        async function carregarAlunos() {
+            const dados = await getJson("/api/alunos");
+            estadoChamada.alunos = Array.isArray(dados.alunos) ? dados.alunos : [];
+            preencherTurmas(Array.isArray(dados.turmas) ? dados.turmas : []);
+        }
+
+        async function carregarChamada() {
+            const dados = await getJson(`/api/chamada?data=${encodeURIComponent(dataChamada.value)}`);
+            estadoChamada.chamada = new Map(
+                (dados.registros || []).map((registro) => [Number(registro.aluno_id), registro.status]),
+            );
+        }
+
+        async function atualizarTela() {
+            limparMensagem(caixa);
+            await carregarAlunos();
+            await carregarChamada();
+            renderizarTabela();
+        }
+
+        tabela.addEventListener("change", (evento) => {
+            const campo = evento.target.closest("input[data-aluno-id]");
+            if (!campo) {
+                return;
+            }
+
+            estadoChamada.chamada.set(Number(campo.dataset.alunoId), campo.value);
+            renderizarResumo();
+        });
+
+        botaoAtualizar.addEventListener("click", async (evento) => {
+            evento.preventDefault();
+
+            try {
+                await atualizarTela();
+            } catch (erro) {
+                mostrarMensagem(caixa, erro.message, "erro");
+            }
+        });
+
+        botaoSalvar.addEventListener("click", async (evento) => {
+            evento.preventDefault();
+            limparMensagem(caixa);
+
+            try {
+                const registros = estadoChamada.alunos.map((aluno) => ({
+                    aluno_id: aluno.id,
+                    status: statusAtual(aluno.id),
+                }));
+
+                if (registros.length === 0) {
+                    throw new Error("Cadastre pelo menos um aluno antes de salvar a chamada.");
+                }
+
+                const dados = await postJson("/api/chamada", {
+                    data: dataChamada.value,
+                    registros,
+                });
+
+                mostrarMensagem(caixa, dados.mensagem || "Chamada salva com sucesso.");
+                await carregarChamada();
+                renderizarTabela();
+            } catch (erro) {
+                mostrarMensagem(caixa, erro.message, "erro");
+            }
+        });
+
+        filtroTurma.addEventListener("change", renderizarTabela);
+        dataChamada.addEventListener("change", async () => {
+            try {
+                await atualizarTela();
+            } catch (erro) {
+                mostrarMensagem(caixa, erro.message, "erro");
+            }
+        });
+
+        dataChamada.value = dataChamada.value || dataHoje();
+
+        atualizarTela().catch((erro) => {
+            mostrarMensagem(caixa, erro.message || "Nao foi possivel carregar a chamada.", "erro");
+        });
+    }
+
+    function iniciar() {
+        bindLogin();
+        bindCadastro();
+        bindCadastroAluno();
+        bindChamada();
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", iniciar);
+    } else {
+        iniciar();
+    }
+})();
+"""
 
 
 def conectar_banco():
@@ -20,6 +547,18 @@ def conectar_banco():
     conexao.row_factory = sqlite3.Row
     conexao.execute("PRAGMA foreign_keys = ON")
     return conexao
+
+
+def colunas_tabela(conexao, tabela):
+    return {
+        linha["name"]
+        for linha in conexao.execute(f"PRAGMA table_info({tabela})").fetchall()
+    }
+
+
+def adicionar_coluna_se_ausente(conexao, tabela, coluna, definicao):
+    if coluna not in colunas_tabela(conexao, tabela):
+        conexao.execute(f"ALTER TABLE {tabela} ADD COLUMN {coluna} {definicao}")
 
 
 def iniciar_banco():
@@ -51,12 +590,47 @@ def iniciar_banco():
                 criado_em TEXT DEFAULT CURRENT_TIMESTAMP,
                 atualizado_em TEXT DEFAULT CURRENT_TIMESTAMP
             );
+
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,
+                senha_hash TEXT NOT NULL,
+                salt TEXT NOT NULL,
+                tipo TEXT NOT NULL CHECK(tipo IN ('professor', 'aluno')),
+                turma TEXT DEFAULT '',
+                disciplinas_turmas TEXT DEFAULT '',
+                cpf TEXT DEFAULT '',
+                nascimento TEXT DEFAULT '',
+                criado_em TEXT DEFAULT CURRENT_TIMESTAMP
+            );
             """
         )
 
+        for coluna, definicao in {
+            "nascimento": "TEXT DEFAULT ''",
+            "cpf": "TEXT DEFAULT ''",
+            "professor": "TEXT DEFAULT ''",
+            "endereco": "TEXT DEFAULT ''",
+            "email": "TEXT DEFAULT ''",
+            "responsavel": "TEXT DEFAULT ''",
+        }.items():
+            adicionar_coluna_se_ausente(conexao, "alunos", coluna, definicao)
+
+
+def texto_limpo(valor):
+    return str(valor or "").strip()
+
+
+def validar_texto_obrigatorio(valor, campo):
+    texto = texto_limpo(valor)
+    if not texto:
+        raise ValueError(f"Informe {campo}.")
+    return texto
+
 
 def validar_data(data_texto):
-    return date.fromisoformat(data_texto).isoformat()
+    return date.fromisoformat(texto_limpo(data_texto)).isoformat()
 
 
 def validar_id(texto_id):
@@ -67,6 +641,41 @@ def validar_id(texto_id):
         return valor
     except (TypeError, ValueError) as erro:
         raise ValueError("ID invalido.") from erro
+
+
+def validar_email(email):
+    email_limpo = texto_limpo(email).lower()
+    if not email_limpo or email_limpo.count("@") != 1:
+        raise ValueError("Informe um e-mail valido.")
+
+    usuario, dominio = email_limpo.split("@", 1)
+    if not usuario or not dominio or "." not in dominio:
+        raise ValueError("Informe um e-mail valido.")
+
+    return email_limpo
+
+
+def validar_senha(senha):
+    senha_texto = str(senha or "")
+    if len(senha_texto.strip()) < 6:
+        raise ValueError("A senha deve ter pelo menos 6 caracteres.")
+    return senha_texto
+
+
+def validar_tipo_usuario(tipo):
+    tipo_limpo = texto_limpo(tipo).lower()
+    if tipo_limpo not in TIPOS_USUARIO:
+        raise ValueError("Tipo de usuario invalido.")
+    return tipo_limpo
+
+
+def normalizar_cpf(cpf):
+    digitos = "".join(caractere for caractere in str(cpf or "") if caractere.isdigit())
+    if not digitos:
+        return ""
+    if len(digitos) != 11:
+        raise ValueError("Informe um CPF valido.")
+    return digitos
 
 
 def validar_concluida(valor):
@@ -88,6 +697,30 @@ def validar_concluida(valor):
     raise ValueError("Campo concluida invalido.")
 
 
+def validar_dados_aluno(dados):
+    nome = validar_texto_obrigatorio(dados.get("nome"), "o nome do aluno")
+    turma = validar_texto_obrigatorio(dados.get("turma"), "a turma")
+
+    nascimento = texto_limpo(dados.get("nascimento"))
+    if nascimento:
+        nascimento = validar_data(nascimento)
+
+    email = texto_limpo(dados.get("email"))
+    if email:
+        email = validar_email(email)
+
+    return {
+        "nome": nome,
+        "turma": turma,
+        "nascimento": nascimento,
+        "cpf": normalizar_cpf(dados.get("cpf")),
+        "professor": texto_limpo(dados.get("professor")),
+        "endereco": texto_limpo(dados.get("endereco")),
+        "email": email,
+        "responsavel": texto_limpo(dados.get("responsavel")),
+    }
+
+
 def linha_tarefa(linha):
     if not linha:
         return None
@@ -97,60 +730,188 @@ def linha_tarefa(linha):
     return tarefa
 
 
+def linha_aluno(linha):
+    if not linha:
+        return None
+
+    aluno = dict(linha)
+    for campo in ("nascimento", "cpf", "professor", "endereco", "email", "responsavel"):
+        aluno[campo] = aluno.get(campo) or ""
+    return aluno
+
+
+def linha_usuario_publica(linha):
+    if not linha:
+        return None
+
+    usuario = dict(linha)
+    return {
+        "id": usuario["id"],
+        "nome": usuario["nome"],
+        "email": usuario["email"],
+        "tipo": usuario["tipo"],
+        "turma": usuario.get("turma") or "",
+        "disciplinas_turmas": usuario.get("disciplinas_turmas") or "",
+        "cpf": usuario.get("cpf") or "",
+        "nascimento": usuario.get("nascimento") or "",
+        "criado_em": usuario.get("criado_em"),
+    }
+
+
 def listar_alunos():
     with conectar_banco() as conexao:
         alunos = conexao.execute(
             """
-            SELECT id, nome, turma
+            SELECT
+                id,
+                nome,
+                turma,
+                nascimento,
+                cpf,
+                professor,
+                endereco,
+                email,
+                responsavel
             FROM alunos
             ORDER BY turma, nome
             """
         ).fetchall()
-    return [dict(aluno) for aluno in alunos]
+    return [linha_aluno(aluno) for aluno in alunos]
 
 
 def buscar_aluno(aluno_id):
     with conectar_banco() as conexao:
         aluno = conexao.execute(
             """
-            SELECT id, nome, turma
+            SELECT
+                id,
+                nome,
+                turma,
+                nascimento,
+                cpf,
+                professor,
+                endereco,
+                email,
+                responsavel
             FROM alunos
             WHERE id = ?
             """,
             (aluno_id,),
         ).fetchone()
-    return dict(aluno) if aluno else None
+    return linha_aluno(aluno)
 
 
-def criar_aluno(nome, turma):
+def buscar_aluno_por_email_ou_cpf(email, cpf):
+    filtros = []
+    valores = []
+
+    if email:
+        filtros.append("LOWER(email) = ?")
+        valores.append(email.lower())
+
+    if cpf:
+        filtros.append("cpf = ?")
+        valores.append(cpf)
+
+    if not filtros:
+        return None
+
+    consulta = f"""
+        SELECT
+            id,
+            nome,
+            turma,
+            nascimento,
+            cpf,
+            professor,
+            endereco,
+            email,
+            responsavel
+        FROM alunos
+        WHERE {' OR '.join(filtros)}
+        ORDER BY id
+        LIMIT 1
+    """
+
+    with conectar_banco() as conexao:
+        aluno = conexao.execute(consulta, valores).fetchone()
+    return linha_aluno(aluno)
+
+
+def criar_aluno(dados):
     with conectar_banco() as conexao:
         cursor = conexao.execute(
             """
-            INSERT INTO alunos (nome, turma)
-            VALUES (?, ?)
+            INSERT INTO alunos (
+                nome,
+                turma,
+                nascimento,
+                cpf,
+                professor,
+                endereco,
+                email,
+                responsavel
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (nome, turma),
+            (
+                dados["nome"],
+                dados["turma"],
+                dados["nascimento"],
+                dados["cpf"],
+                dados["professor"],
+                dados["endereco"],
+                dados["email"],
+                dados["responsavel"],
+            ),
         )
         aluno = conexao.execute(
             """
-            SELECT id, nome, turma
+            SELECT
+                id,
+                nome,
+                turma,
+                nascimento,
+                cpf,
+                professor,
+                endereco,
+                email,
+                responsavel
             FROM alunos
             WHERE id = ?
             """,
             (cursor.lastrowid,),
         ).fetchone()
-    return dict(aluno)
+    return linha_aluno(aluno)
 
 
-def atualizar_aluno(aluno_id, nome, turma):
+def atualizar_aluno(aluno_id, dados):
     with conectar_banco() as conexao:
         cursor = conexao.execute(
             """
             UPDATE alunos
-            SET nome = ?, turma = ?
+            SET
+                nome = ?,
+                turma = ?,
+                nascimento = ?,
+                cpf = ?,
+                professor = ?,
+                endereco = ?,
+                email = ?,
+                responsavel = ?
             WHERE id = ?
             """,
-            (nome, turma, aluno_id),
+            (
+                dados["nome"],
+                dados["turma"],
+                dados["nascimento"],
+                dados["cpf"],
+                dados["professor"],
+                dados["endereco"],
+                dados["email"],
+                dados["responsavel"],
+                aluno_id,
+            ),
         )
 
         if cursor.rowcount == 0:
@@ -158,14 +919,42 @@ def atualizar_aluno(aluno_id, nome, turma):
 
         aluno = conexao.execute(
             """
-            SELECT id, nome, turma
+            SELECT
+                id,
+                nome,
+                turma,
+                nascimento,
+                cpf,
+                professor,
+                endereco,
+                email,
+                responsavel
             FROM alunos
             WHERE id = ?
             """,
             (aluno_id,),
         ).fetchone()
 
-    return dict(aluno)
+    return linha_aluno(aluno)
+
+
+def criar_ou_atualizar_aluno_de_cadastro(dados):
+    existente = buscar_aluno_por_email_ou_cpf(dados["email"], dados["cpf"])
+
+    if not existente:
+        return criar_aluno(dados)
+
+    dados_atualizados = {
+        "nome": dados["nome"] or existente["nome"],
+        "turma": dados["turma"] or existente["turma"],
+        "nascimento": dados["nascimento"] or existente["nascimento"],
+        "cpf": dados["cpf"] or existente["cpf"],
+        "professor": dados["professor"] or existente["professor"],
+        "endereco": dados["endereco"] or existente["endereco"],
+        "email": dados["email"] or existente["email"],
+        "responsavel": dados["responsavel"] or existente["responsavel"],
+    }
+    return atualizar_aluno(existente["id"], dados_atualizados)
 
 
 def remover_aluno(aluno_id):
@@ -180,7 +969,7 @@ def remover_aluno(aluno_id):
     return cursor.rowcount > 0
 
 
-def buscar_chamada(data):
+def buscar_chamada(data_chamada):
     with conectar_banco() as conexao:
         registros = conexao.execute(
             """
@@ -188,12 +977,12 @@ def buscar_chamada(data):
             FROM chamadas
             WHERE data = ?
             """,
-            (data,),
+            (data_chamada,),
         ).fetchall()
     return {registro["aluno_id"]: registro["status"] for registro in registros}
 
 
-def salvar_chamada(data, registros):
+def salvar_chamada(data_chamada, registros):
     with conectar_banco() as conexao:
         conexao.executemany(
             """
@@ -203,7 +992,7 @@ def salvar_chamada(data, registros):
                 status = excluded.status,
                 atualizado_em = CURRENT_TIMESTAMP
             """,
-            [(registro["aluno_id"], data, registro["status"]) for registro in registros],
+            [(registro["aluno_id"], data_chamada, registro["status"]) for registro in registros],
         )
 
 
@@ -267,7 +1056,8 @@ def atualizar_tarefa(tarefa_id, titulo, descricao, concluida):
         cursor = conexao.execute(
             """
             UPDATE tarefas
-            SET titulo = ?,
+            SET
+                titulo = ?,
                 descricao = ?,
                 concluida = ?,
                 atualizado_em = CURRENT_TIMESTAMP
@@ -303,6 +1093,132 @@ def remover_tarefa(tarefa_id):
     return cursor.rowcount > 0
 
 
+def gerar_hash_senha(senha, salt_hex=None):
+    salt = bytes.fromhex(salt_hex) if salt_hex else secrets.token_bytes(16)
+    senha_hash = hashlib.pbkdf2_hmac("sha256", senha.encode("utf-8"), salt, 120_000).hex()
+    return salt.hex(), senha_hash
+
+
+def buscar_usuario_por_email(email):
+    with conectar_banco() as conexao:
+        usuario = conexao.execute(
+            """
+            SELECT
+                id,
+                nome,
+                email,
+                senha_hash,
+                salt,
+                tipo,
+                turma,
+                disciplinas_turmas,
+                cpf,
+                nascimento,
+                criado_em
+            FROM usuarios
+            WHERE LOWER(email) = ?
+            """,
+            (email.lower(),),
+        ).fetchone()
+    return usuario
+
+
+def buscar_usuario_por_id(usuario_id):
+    with conectar_banco() as conexao:
+        usuario = conexao.execute(
+            """
+            SELECT
+                id,
+                nome,
+                email,
+                tipo,
+                turma,
+                disciplinas_turmas,
+                cpf,
+                nascimento,
+                criado_em
+            FROM usuarios
+            WHERE id = ?
+            """,
+            (usuario_id,),
+        ).fetchone()
+    return linha_usuario_publica(usuario)
+
+
+def criar_usuario(dados):
+    salt_hex, senha_hash = gerar_hash_senha(dados["senha"])
+
+    with conectar_banco() as conexao:
+        cursor = conexao.execute(
+            """
+            INSERT INTO usuarios (
+                nome,
+                email,
+                senha_hash,
+                salt,
+                tipo,
+                turma,
+                disciplinas_turmas,
+                cpf,
+                nascimento
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                dados["nome"],
+                dados["email"],
+                senha_hash,
+                salt_hex,
+                dados["tipo"],
+                dados["turma"],
+                dados["disciplinas_turmas"],
+                dados["cpf"],
+                dados["nascimento"],
+            ),
+        )
+        usuario = conexao.execute(
+            """
+            SELECT
+                id,
+                nome,
+                email,
+                tipo,
+                turma,
+                disciplinas_turmas,
+                cpf,
+                nascimento,
+                criado_em
+            FROM usuarios
+            WHERE id = ?
+            """,
+            (cursor.lastrowid,),
+        ).fetchone()
+    return linha_usuario_publica(usuario)
+
+
+def autenticar_usuario(email, senha):
+    usuario = buscar_usuario_por_email(email)
+    if not usuario:
+        return None
+
+    _, senha_hash = gerar_hash_senha(senha, usuario["salt"])
+    if senha_hash != usuario["senha_hash"]:
+        return None
+
+    return buscar_usuario_por_id(usuario["id"])
+
+
+def criar_sessao(usuario_id):
+    token = secrets.token_urlsafe(32)
+    SESSOES[token] = usuario_id
+    return token
+
+
+def remover_sessao(token):
+    if token:
+        SESSOES.pop(token, None)
+
+
 class ListaChamadaHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(204)
@@ -313,14 +1229,8 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
         try:
             rota = urlparse(self.path)
 
-            if rota.path == "/":
-                return self.servir_arquivo("index.html", "text/html; charset=utf-8")
-
-            if rota.path == "/style.css":
-                return self.servir_arquivo("style.css", "text/css; charset=utf-8")
-
             if rota.path == "/app.js":
-                return self.servir_arquivo("app.js", "application/javascript; charset=utf-8")
+                return self.servir_app_js()
 
             if rota.path == "/api/alunos":
                 return self.api_listar_alunos()
@@ -330,6 +1240,9 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
 
             if rota.path == "/api/chamada":
                 return self.api_buscar_chamada(rota.query)
+
+            if rota.path == "/api/auth/eu":
+                return self.api_auth_eu()
 
             if rota.path == "/tarefas":
                 return self.api_listar_tarefas()
@@ -343,8 +1256,12 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 return
 
+            if self.servir_recurso_estatico(rota.path):
+                return
+
             self.enviar_json({"erro": "Rota nao encontrada."}, status=404)
         except Exception:
+            traceback.print_exc()
             self.enviar_json({"erro": "Erro interno do servidor."}, status=500)
 
     def do_POST(self):
@@ -357,11 +1274,21 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             if rota.path == "/api/chamada":
                 return self.api_salvar_chamada()
 
+            if rota.path == "/api/auth/cadastro":
+                return self.api_auth_cadastro()
+
+            if rota.path == "/api/auth/login":
+                return self.api_auth_login()
+
+            if rota.path == "/api/auth/logout":
+                return self.api_auth_logout()
+
             if rota.path == "/tarefas":
                 return self.api_criar_tarefa()
 
             self.enviar_json({"erro": "Rota nao encontrada."}, status=404)
         except Exception:
+            traceback.print_exc()
             self.enviar_json({"erro": "Erro interno do servidor."}, status=500)
 
     def do_PUT(self):
@@ -376,6 +1303,7 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
 
             self.enviar_json({"erro": "Rota nao encontrada."}, status=404)
         except Exception:
+            traceback.print_exc()
             self.enviar_json({"erro": "Erro interno do servidor."}, status=500)
 
     def do_DELETE(self):
@@ -390,6 +1318,7 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
 
             self.enviar_json({"erro": "Rota nao encontrada."}, status=404)
         except Exception:
+            traceback.print_exc()
             self.enviar_json({"erro": "Erro interno do servidor."}, status=500)
 
     def log_message(self, format, *args):
@@ -400,25 +1329,68 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
-    def servir_arquivo(self, nome_arquivo, content_type):
-        caminho = STATIC_DIR / nome_arquivo
-
-        if not caminho.exists():
-            self.enviar_json({"erro": "Arquivo nao encontrado."}, status=404)
-            return
-
-        conteudo = caminho.read_bytes()
-
-        self.send_response(200)
+    def enviar_bytes(self, conteudo, content_type, status=200, cabecalhos_extras=None):
+        self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(conteudo)))
         self.enviar_cabecalhos_cors()
+
+        if cabecalhos_extras:
+            for nome, valor in cabecalhos_extras.items():
+                self.send_header(nome, valor)
+
         self.end_headers()
         self.wfile.write(conteudo)
 
+    def enviar_json(self, dados, status=200, cabecalhos_extras=None):
+        resposta = json.dumps(dados, ensure_ascii=False).encode("utf-8")
+        self.enviar_bytes(
+            resposta,
+            "application/json; charset=utf-8",
+            status=status,
+            cabecalhos_extras=cabecalhos_extras,
+        )
+
+    def servir_app_js(self):
+        self.enviar_bytes(
+            APP_JS.encode("utf-8"),
+            "application/javascript; charset=utf-8",
+            cabecalhos_extras={"Cache-Control": "no-store"},
+        )
+
+    def caminho_estatico(self, path):
+        arquivo = ROTAS_HTML.get(path, path.lstrip("/"))
+        if not arquivo:
+            arquivo = "index.html"
+
+        caminho = (STATIC_DIR / arquivo).resolve()
+
+        try:
+            caminho.relative_to(STATIC_DIR.resolve())
+        except ValueError:
+            return None
+
+        if not caminho.exists() or caminho.is_dir():
+            return None
+
+        return caminho
+
+    def servir_recurso_estatico(self, path):
+        caminho = self.caminho_estatico(path)
+        if not caminho:
+            return False
+
+        content_type, _ = mimetypes.guess_type(caminho.name)
+        if caminho.suffix in {".html", ".css", ".js"}:
+            content_type = f"{content_type or 'text/plain'}; charset=utf-8"
+        else:
+            content_type = content_type or "application/octet-stream"
+
+        self.enviar_bytes(caminho.read_bytes(), content_type)
+        return True
+
     def ler_json(self):
         tamanho = int(self.headers.get("Content-Length", 0))
-
         if tamanho == 0:
             raise ValueError("O corpo da requisicao esta vazio.")
 
@@ -428,16 +1400,6 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             return json.loads(corpo)
         except json.JSONDecodeError as erro:
             raise ValueError("JSON invalido.") from erro
-
-    def enviar_json(self, dados, status=200):
-        resposta = json.dumps(dados, ensure_ascii=False).encode("utf-8")
-
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(resposta)))
-        self.enviar_cabecalhos_cors()
-        self.end_headers()
-        self.wfile.write(resposta)
 
     def id_da_rota(self, path, prefixo):
         base = prefixo.rstrip("/")
@@ -452,11 +1414,29 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
 
         return trecho_id
 
-    # ----- API ALUNOS (compatibilidade com front) -----
+    def cookies_recebidos(self):
+        cabecalho = self.headers.get("Cookie", "")
+        jar = cookies.SimpleCookie()
+        if cabecalho:
+            jar.load(cabecalho)
+        return jar
+
+    def token_sessao(self):
+        cookie = self.cookies_recebidos().get(SESSION_COOKIE)
+        return cookie.value if cookie else None
+
+    def usuario_logado(self):
+        token = self.token_sessao()
+        usuario_id = SESSOES.get(token)
+        if not usuario_id:
+            return None
+        return buscar_usuario_por_id(usuario_id)
+
+    # ----- API ALUNOS -----
 
     def api_listar_alunos(self):
         alunos = listar_alunos()
-        turmas = sorted({aluno["turma"] for aluno in alunos})
+        turmas = sorted({aluno["turma"] for aluno in alunos if aluno["turma"]})
 
         turma_filtro = parse_qs(urlparse(self.path).query).get("turma", [""])[0].strip()
         if turma_filtro:
@@ -468,7 +1448,6 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
 
     def api_buscar_aluno_por_id(self, path):
         aluno_id_texto = self.id_da_rota(path, "/api/alunos")
-
         if not aluno_id_texto:
             self.enviar_json({"erro": "Rota nao encontrada."}, status=404)
             return
@@ -480,7 +1459,6 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             return
 
         aluno = buscar_aluno(aluno_id)
-
         if not aluno:
             self.enviar_json({"erro": "Aluno nao encontrado."}, status=404)
             return
@@ -489,44 +1467,28 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
 
     def api_criar_aluno(self):
         try:
-            dados = self.ler_json()
+            dados = validar_dados_aluno(self.ler_json())
         except ValueError as erro:
             self.enviar_json({"erro": str(erro)}, status=400)
             return
 
-        nome = str(dados.get("nome", "")).strip()
-        turma = str(dados.get("turma", "")).strip()
-
-        if not nome or not turma:
-            self.enviar_json({"erro": "Informe o nome do aluno e a turma."}, status=400)
-            return
-
-        aluno = criar_aluno(nome, turma)
+        aluno = criar_ou_atualizar_aluno_de_cadastro(dados)
         self.enviar_json({"mensagem": "Aluno cadastrado com sucesso.", "aluno": aluno}, status=201)
 
     def api_atualizar_aluno(self, path):
         aluno_id_texto = self.id_da_rota(path, "/api/alunos")
-
         if not aluno_id_texto:
             self.enviar_json({"erro": "Rota nao encontrada."}, status=404)
             return
 
         try:
             aluno_id = validar_id(aluno_id_texto)
-            dados = self.ler_json()
+            dados = validar_dados_aluno(self.ler_json())
         except ValueError as erro:
             self.enviar_json({"erro": str(erro)}, status=400)
             return
 
-        nome = str(dados.get("nome", "")).strip()
-        turma = str(dados.get("turma", "")).strip()
-
-        if not nome or not turma:
-            self.enviar_json({"erro": "Informe o nome do aluno e a turma."}, status=400)
-            return
-
-        aluno = atualizar_aluno(aluno_id, nome, turma)
-
+        aluno = atualizar_aluno(aluno_id, dados)
         if not aluno:
             self.enviar_json({"erro": "Aluno nao encontrado."}, status=404)
             return
@@ -535,7 +1497,6 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
 
     def api_remover_aluno(self, path):
         aluno_id_texto = self.id_da_rota(path, "/api/alunos")
-
         if not aluno_id_texto:
             self.enviar_json({"erro": "Rota nao encontrada."}, status=404)
             return
@@ -546,40 +1507,37 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             self.enviar_json({"erro": str(erro)}, status=400)
             return
 
-        removido = remover_aluno(aluno_id)
-
-        if not removido:
+        if not remover_aluno(aluno_id):
             self.enviar_json({"erro": "Aluno nao encontrado."}, status=404)
             return
 
         self.enviar_json({"mensagem": "Aluno removido com sucesso."})
 
-    # ----- API CHAMADA (compatibilidade com front) -----
+    # ----- API CHAMADA -----
 
     def api_buscar_chamada(self, query_string):
         parametros = parse_qs(query_string)
-        data = parametros.get("data", [""])[0]
+        data_chamada = parametros.get("data", [""])[0]
 
-        if not data:
+        if not data_chamada:
             self.enviar_json({"erro": "Informe a data da chamada."}, status=400)
             return
 
         try:
-            data = validar_data(data)
+            data_chamada = validar_data(data_chamada)
         except ValueError:
             self.enviar_json({"erro": "Data invalida. Use o formato AAAA-MM-DD."}, status=400)
             return
 
         alunos = listar_alunos()
-        chamada_atual = buscar_chamada(data)
+        chamada_atual = buscar_chamada(data_chamada)
         resumo = gerar_resumo(alunos, chamada_atual)
-
         registros = [
             {"aluno_id": aluno_id, "status": status}
             for aluno_id, status in chamada_atual.items()
         ]
 
-        self.enviar_json({"data": data, "registros": registros, "resumo": resumo})
+        self.enviar_json({"data": data_chamada, "registros": registros, "resumo": resumo})
 
     def api_salvar_chamada(self):
         try:
@@ -588,15 +1546,15 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             self.enviar_json({"erro": str(erro)}, status=400)
             return
 
-        data = str(dados.get("data", "")).strip()
+        data_chamada = texto_limpo(dados.get("data"))
         registros = dados.get("registros", [])
 
-        if not data:
+        if not data_chamada:
             self.enviar_json({"erro": "Informe a data da chamada."}, status=400)
             return
 
         try:
-            data = validar_data(data)
+            data_chamada = validar_data(data_chamada)
         except ValueError:
             self.enviar_json({"erro": "Data invalida. Use o formato AAAA-MM-DD."}, status=400)
             return
@@ -614,7 +1572,7 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
                 self.enviar_json({"erro": "Aluno invalido enviado para a API."}, status=400)
                 return
 
-            status = str(registro.get("status", "")).strip().lower()
+            status = texto_limpo(registro.get("status")).lower()
             if status not in STATUS_VALIDOS:
                 self.enviar_json({"erro": "Status invalido. Use presente, faltou ou atrasado."}, status=400)
                 return
@@ -622,26 +1580,123 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             registros_limpos.append({"aluno_id": aluno_id, "status": status})
 
         try:
-            salvar_chamada(data, registros_limpos)
+            salvar_chamada(data_chamada, registros_limpos)
         except sqlite3.IntegrityError:
             self.enviar_json({"erro": "Um ou mais alunos enviados nao existem mais no banco."}, status=400)
             return
 
-        alunos = listar_alunos()
-        chamada_atual = buscar_chamada(data)
-        resumo = gerar_resumo(alunos, chamada_atual)
-
+        resumo = gerar_resumo(listar_alunos(), buscar_chamada(data_chamada))
         self.enviar_json({"mensagem": "Chamada salva com sucesso.", "resumo": resumo})
 
-    # ----- API TAREFAS (CRUD obrigatorio) -----
+    # ----- API AUTH -----
+
+    def api_auth_cadastro(self):
+        try:
+            dados = self.ler_json()
+            tipo = validar_tipo_usuario(dados.get("tipo"))
+            nome = validar_texto_obrigatorio(dados.get("nome"), "o nome")
+            email = validar_email(dados.get("email"))
+            senha = validar_senha(dados.get("senha"))
+            turma = texto_limpo(dados.get("turma"))
+            disciplinas_turmas = texto_limpo(dados.get("disciplinas_turmas"))
+            cpf = normalizar_cpf(dados.get("cpf"))
+            nascimento = texto_limpo(dados.get("nascimento"))
+            if nascimento:
+                nascimento = validar_data(nascimento)
+        except ValueError as erro:
+            self.enviar_json({"erro": str(erro)}, status=400)
+            return
+
+        if tipo == "professor" and not disciplinas_turmas:
+            self.enviar_json({"erro": "Informe as disciplinas ou turmas do professor."}, status=400)
+            return
+
+        if tipo == "aluno" and not turma:
+            self.enviar_json({"erro": "Informe a turma do aluno."}, status=400)
+            return
+
+        try:
+            usuario = criar_usuario(
+                {
+                    "nome": nome,
+                    "email": email,
+                    "senha": senha,
+                    "tipo": tipo,
+                    "turma": turma,
+                    "disciplinas_turmas": disciplinas_turmas,
+                    "cpf": cpf,
+                    "nascimento": nascimento,
+                }
+            )
+        except sqlite3.IntegrityError:
+            self.enviar_json({"erro": "Ja existe um usuario cadastrado com este e-mail."}, status=400)
+            return
+
+        resposta = {"mensagem": "Cadastro realizado com sucesso.", "usuario": usuario}
+
+        if tipo == "aluno":
+            aluno = criar_ou_atualizar_aluno_de_cadastro(
+                {
+                    "nome": nome,
+                    "turma": turma,
+                    "nascimento": nascimento,
+                    "cpf": cpf,
+                    "professor": "",
+                    "endereco": "",
+                    "email": email,
+                    "responsavel": "",
+                }
+            )
+            resposta["aluno"] = aluno
+
+        self.enviar_json(resposta, status=201)
+
+    def api_auth_login(self):
+        try:
+            dados = self.ler_json()
+            email = validar_email(dados.get("email"))
+            senha = validar_senha(dados.get("senha"))
+        except ValueError as erro:
+            self.enviar_json({"erro": str(erro)}, status=400)
+            return
+
+        usuario = autenticar_usuario(email, senha)
+        if not usuario:
+            self.enviar_json({"erro": "E-mail ou senha invalidos."}, status=401)
+            return
+
+        token = criar_sessao(usuario["id"])
+        self.enviar_json(
+            {"mensagem": "Login realizado com sucesso.", "usuario": usuario},
+            cabecalhos_extras={
+                "Set-Cookie": f"{SESSION_COOKIE}={token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400"
+            },
+        )
+
+    def api_auth_logout(self):
+        remover_sessao(self.token_sessao())
+        self.enviar_json(
+            {"mensagem": "Logout realizado com sucesso."},
+            cabecalhos_extras={
+                "Set-Cookie": f"{SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"
+            },
+        )
+
+    def api_auth_eu(self):
+        usuario = self.usuario_logado()
+        if not usuario:
+            self.enviar_json({"erro": "Sessao nao encontrada."}, status=401)
+            return
+
+        self.enviar_json({"usuario": usuario})
+
+    # ----- API TAREFAS -----
 
     def api_listar_tarefas(self):
-        tarefas = listar_tarefas()
-        self.enviar_json({"tarefas": tarefas})
+        self.enviar_json({"tarefas": listar_tarefas()})
 
     def api_buscar_tarefa_por_id(self, path):
         tarefa_id_texto = self.id_da_rota(path, "/tarefas")
-
         if not tarefa_id_texto:
             self.enviar_json({"erro": "Rota nao encontrada."}, status=404)
             return
@@ -653,7 +1708,6 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             return
 
         tarefa = buscar_tarefa(tarefa_id)
-
         if not tarefa:
             self.enviar_json({"erro": "Tarefa nao encontrada."}, status=404)
             return
@@ -667,9 +1721,8 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             self.enviar_json({"erro": str(erro)}, status=400)
             return
 
-        titulo = str(dados.get("titulo", "")).strip()
-        descricao = str(dados.get("descricao", "")).strip()
-
+        titulo = texto_limpo(dados.get("titulo"))
+        descricao = texto_limpo(dados.get("descricao"))
         if not titulo or not descricao:
             self.enviar_json({"erro": "Campos obrigatorios: titulo e descricao."}, status=400)
             return
@@ -685,7 +1738,6 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
 
     def api_atualizar_tarefa(self, path):
         tarefa_id_texto = self.id_da_rota(path, "/tarefas")
-
         if not tarefa_id_texto:
             self.enviar_json({"erro": "Rota nao encontrada."}, status=404)
             return
@@ -697,9 +1749,8 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             self.enviar_json({"erro": str(erro)}, status=400)
             return
 
-        titulo = str(dados.get("titulo", "")).strip()
-        descricao = str(dados.get("descricao", "")).strip()
-
+        titulo = texto_limpo(dados.get("titulo"))
+        descricao = texto_limpo(dados.get("descricao"))
         if not titulo or not descricao:
             self.enviar_json({"erro": "Campos obrigatorios: titulo e descricao."}, status=400)
             return
@@ -711,7 +1762,6 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             return
 
         tarefa = atualizar_tarefa(tarefa_id, titulo, descricao, concluida)
-
         if not tarefa:
             self.enviar_json({"erro": "Tarefa nao encontrada."}, status=404)
             return
@@ -720,7 +1770,6 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
 
     def api_remover_tarefa(self, path):
         tarefa_id_texto = self.id_da_rota(path, "/tarefas")
-
         if not tarefa_id_texto:
             self.enviar_json({"erro": "Rota nao encontrada."}, status=404)
             return
@@ -731,9 +1780,7 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             self.enviar_json({"erro": str(erro)}, status=400)
             return
 
-        removida = remover_tarefa(tarefa_id)
-
-        if not removida:
+        if not remover_tarefa(tarefa_id):
             self.enviar_json({"erro": "Tarefa nao encontrada."}, status=404)
             return
 
