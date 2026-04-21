@@ -48,7 +48,7 @@ input, select {
 
 
 /*botões*/
-.botao {
+.botao ,.botao-principal{
     padding: 10px;
     border-radius: 8px;
     border: none;

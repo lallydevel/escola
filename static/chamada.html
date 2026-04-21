@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chamada - EduChamada</title>
-    <link rel="stylesheet" href="chamada.css">
+    <link rel="stylesheet" href="static/chamada.css">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -43,10 +44,12 @@
 
                     <label>
                         Turma
-                        <select id="filtro-turma">
-                            <option>Todas</option>
-                            <option>3º Ano A</option>
-                            <option>3º Ano B</option>
+                        <select id="filtro-turma" name="turma"> <option value="todas">Todas</option>
+                            {% for t in turmas %}
+                            <option value="{{ t }}" {% ifequal t turma_selecionada %}selected{% endifequal %}>
+                                {{ t }}
+                            </option>
+                            {% endfor %}
                         </select>
                     </label>
 
@@ -98,55 +101,38 @@
 
                         <!-- ALUNO 1 -->
                         <tr>
-                            <td><strong>Ana Silva</strong></td>
-                            <td><span class="tag-turma">3º Ano B</span></td>
+                            <td><strong>{{ aluno.nome }}</strong></td>
+                            <td><span class="tag-turma">{{ aluno.turma }}</span></td>
                             <td>
                                 <div class="opcoes-presenca">
 
                                     <label class="radio-status presente">
-                                        <input type="radio" name="aluno1" checked>
+                                        <input type="radio" name="status_{{ aluno.id }}" value="P" checked>
                                         <span>P</span>
                                     </label>
 
                                     <label class="radio-status falta">
-                                        <input type="radio" name="aluno1">
+                                        <input type="radio" name="status_{{ aluno.id }}" value="F">
+
                                         <span>F</span>
                                     </label>
 
                                     <label class="radio-status atraso">
-                                        <input type="radio" name="aluno1">
+                                        <input type="radio" name="status_{{ aluno.id }}" value="A">
                                         <span>A</span>
                                     </label>
 
                                 </div>
                             </td>
                         </tr>
-
-                        <!-- ALUNO 2 -->
+                        {% empty %}
                         <tr>
-                            <td><strong>João Pedro</strong></td>
-                            <td><span class="tag-turma">3º Ano B</span></td>
-                            <td>
-                                <div class="opcoes-presenca">
-
-                                    <label class="radio-status presente">
-                                        <input type="radio" name="aluno2" checked>
-                                        <span>P</span>
-                                    </label>
-
-                                    <label class="radio-status falta">
-                                        <input type="radio" name="aluno2">
-                                        <span>F</span>
-                                    </label>
-
-                                    <label class="radio-status atraso">
-                                        <input type="radio" name="aluno2">
-                                        <span>A</span>
-                                    </label>
-
-                                </div>
+                            <td colspan="3" style="text-align:center;">
+                                Nenhum aluno cadastrado no sistema ainda.
+                                Vá até a aba de Registro para cadastrar.
                             </td>
                         </tr>
+                        {% endfor %}
 
                     </tbody>
                 </table>
@@ -162,16 +148,17 @@
 
     </main>
     <footer>
-    <nav>
-        <a href="#sobre">Sobre</a>
-        <a href="#contato">Contato</a>
-        
-        <span>| &copy; 2026 EduChamada - Gestão Inteligente |</span>
-        
-        <a href="chamada.html">Turmas</a>
-        <a href="cadastro_aluno.html">Cadastro de Aluno</a>
-    </nav>
+        <nav>
+            <a href="#sobre">Sobre</a>
+            <a href="#contato">Contato</a>
+
+            <span>| &copy; 2026 EduChamada - Gestão Inteligente |</span>
+
+            <a href="chamada.html">Turmas</a>
+            <a href="cadastro_aluno.html">Cadastro de Aluno</a>
+        </nav>
     </footer>
     <script src="app.js"></script>
 </body>
+
 </html>

@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EduChamada</title>
-    <link rel="stylesheet" href="index.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="static/index.css">
+    <link rel="stylesheet" href="static/style.css">
 </head>
 
 <body>
@@ -45,10 +45,12 @@
             <div class="conteudo-sobre reveal">
                 <h2>Cadastro de LOGIN-Professor</h2>
                 <form class="form-padrao">
-                    <input type="text" placeholder="Nome Completo" required>
-                    <input type="email" placeholder="E-mail Institucional" required>
-                    <input type="password" placeholder="Defina sua Senha" required>
-                    <input type="text" placeholder="Disciplinas/Turmas" required>
+                    {% csrf_token %}
+                    <input type="hidden" name="tipo_usuario" value="professor">
+                    <input type="text" name="nome" placeholder="Nome Completo" required>
+                    <input type="email" name="email" placeholder="E-mail Institucional" required>
+                    <input type="password" name="senha" placeholder="Defina sua Senha" required>
+                    <input type="text" name="disciplinas" placeholder="Disciplinas/Turmas" required>
                     <button type="submit" class="btn-principal">Finalizar Cadastro Docente</button>
                 </form>
             </div>
@@ -58,14 +60,16 @@
             <div class="conteudo-contato reveal">
                 <h2>Cadastro de LOGIN-Aluno</h2>
                 <form class="form-padrao">
-                    <input type="text" placeholder="Nome do Aluno" required>
+                    {% csrf_token %}
+                    <input type="hidden" name="tipo_usuario" value="aluno">
+                    <input type="text" name="nome" placeholder="Nome do Aluno" required>
                     <div class="linha-dupla">
                         <input type="date" placeholder="Nascimento" required>
                         <input type="text" placeholder="CPF" required>
                     </div>
-                    <input type="text" placeholder="Turma" required>
-                    <input type="email" placeholder="E-mail" required>
-                    <input type="password" placeholder="Defina sua Senha" required>
+                    <input type="text" name="turma" placeholder="Turma" required>
+                    <input type="email" name="email" placeholder="E-mail" required>
+                    <input type="password" name="senha" placeholder="Defina sua Senha" required>
                     <button type="submit" class="btn-principal">Finalizar Cadastro Discente</button>
                 </form>
             </div>
