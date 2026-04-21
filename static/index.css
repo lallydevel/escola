@@ -68,7 +68,7 @@
     flex: 1;
 }
 
-.btn-principal {
+.btn-principal , .botao btn-principal{
     padding: 15px;
     background: #4F46E5;
     color: white;
@@ -191,15 +191,8 @@
 
 
 
-
-
-
-
-
-
-
 /** --- PAGINA DE CADASTRO --- */
-.pagina-cadastro {
+.pagina-cadastro , .pagg{
     padding: 40px 20px;
     display: flex;
     justify-content: center;
@@ -207,7 +200,7 @@
     min-height: calc(100vh - 140px);
 }
 
-.formulario-container {
+.formulario-container , .formulario{
     background: #FFFFFF;
     padding: 30px;
     border-radius: 16px;
@@ -216,12 +209,12 @@
     max-width: 650px;
 }
 
-.formulario-container h2 {
+.formulario-container h2 , .formulario h2{
     color: #4F46E5;
     margin-bottom: 10px;
 }
 
-.formulario-container p {
+.formulario-container p , .formulario p{
     color: #6B7280;
     margin-bottom: 30px;
     font-size: 14px;

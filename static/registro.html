@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - EduChamada</title>
-    <link rel="stylesheet" href="login.css">
+    <title>EduChamada</title>
+    <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="registro.css">
 </head>
-
 <body>
-     <header>
+    <header>
             <div class="logo">
                 <a href="index.html">
                     <h1>EduChamada</h1>
@@ -25,42 +25,43 @@
                 </ul>
             </nav>
         </header>
+        <main class="pagg">
 
-    <main class="login-container">
-        <img src="imagens/quadro.png" alt="Quadro Escolar" class="hero-image">
+    <div class="cartao">
+        <h2>Editar aluno</h2>
 
-        <div class="login-box">
+        <form class="formulario">
 
-            <div class="login-topo">
-                <h1>EduChamada</h1>
-                <p>Sistema de gestão escolar</p>
-            </div>
+            <label>
+                Nome
+                <input type="text" value="Ana Silva">
+            </label>
 
-            <form class="formulario">
+            <label>
+                Turma
+                <input type="text" value="3º Ano B">
+            </label>
 
-                <label>
-                    Email
-                    <input type="email" placeholder="seu@email.com" required>
-                </label>
+            <h3>Segurança</h3>
 
-                <label>
-                    Senha
-                    <input type="password" placeholder="....." required>
-                </label>
+            <label>
+                Senha atual
+                <input type="password">
+            </label>
 
-                <button type="submit" class="botao botao-principal">
-                    Entrar
-                </button>
+            <label>
+                Nova senha
+                <input type="password">
+            </label>
 
-            </form>
+            <button class="botao btn-principal">
+                Salvar alterações
+            </button>
 
-            <p class="login-extra">
-                Não tem conta? <a href="cadastro.html">Cadastre-se</a>
-            </p>
+        </form>
+    </div>
+</main>
 
-        </div>
-
-    </main>
     <footer>
     <nav>
         <a href="index.html#sobre">Sobre</a>
@@ -73,6 +74,5 @@
     </nav>
     </footer>
     <script src="app.js"></script>
-
 </body>
 </html>
