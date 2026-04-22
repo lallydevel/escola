@@ -55,3 +55,28 @@
 .pagg .botao.btn-principal:hover {
     background: #4338CA;
 }
+
+.acoes-formulario {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.acoes-formulario .botao {
+    flex: 1;
+}
+
+/* botão deletar */
+.btn-deletar {
+    background: #ef4444;
+    color: white;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.btn-deletar:hover {
+    background: #dc2626;
+}

@@ -352,3 +352,23 @@ elementos.dataChamada.value = dataHoje();
 atualizarTela().catch(() => {
     mostrarMensagem("Nao foi possivel carregar a lista de chamada.", "erro");
 });
+
+
+const btnDeletar = document.getElementById("btn-deletar");
+
+if (btnDeletar) {
+    btnDeletar.addEventListener("click", () => {
+        const confirmar = confirm("Tem certeza que deseja excluir este aluno?");
+
+        if (confirmar) {
+            alert("Aluno excluído!");
+            
+            // redireciona de volta pra chamada
+            window.location.href = "chamada.html";
+        }
+    });
+}
+
+const confirmar = confirm("⚠️ Essa ação não pode ser desfeita.\nDeseja realmente excluir o aluno?");
+
+const turmas = ["Dev. Sistemas - 2026" , "Administração - 2026"];

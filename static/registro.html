@@ -33,13 +33,17 @@
         <form class="formulario">
 
             <label>
-                Nome
-                <input type="text" value="Ana Silva">
+                Nome do Aluno
+                <input type="text" placeholder="Nome">
             </label>
 
             <label>
-                Turma
-                <input type="text" value="3º Ano B">
+                    Turma
+                <select name="turma">
+                    <option value="">Selecione a turma</option>
+                    <option value="Dv. Sistemas - 2026">Dv. Sistemas - 2026</option>
+                    <option value="Administração - 2026">Administração - 2026</option>
+                </select>
             </label>
 
             <h3>Segurança</h3>
@@ -54,8 +58,12 @@
                 <input type="password">
             </label>
 
-            <button class="botao btn-principal">
+            <button type="submit" class="botao btn-principal">
                 Salvar alterações
+            </button>
+
+            <button type="button" class="botao btn-deletar" id="btn-deletar">
+                Excluir aluno
             </button>
 
         </form>
