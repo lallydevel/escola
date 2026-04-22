@@ -5,63 +5,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chamada - EduChamada</title>
-    <link rel="stylesheet" href="chamada.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/chamada.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
     <main class="pagina">
-
-        <!-- HEADER -->
         <header>
             <div class="logo">
-                <a href="index.html">
+                <a href="/index.html">
                     <h1>EduChamada</h1>
                 </a>
             </div>
 
             <nav>
                 <ul>
-                    <li><a href="index.html">Início</a></li>
-                    <li><a href="chamada.html">Realizar Chamada</a></li>
-                    <li><a href="cadastro.html">Cadastro</a></li>
-                    <li><a href="login.html">Login</a></li>
+                    <li><a href="/index.html">Início</a></li>
+                    <li><a href="/chamada.html">Realizar Chamada</a></li>
+                    <li><a href="/cadastro.html">Cadastro</a></li>
+                    <li><a href="/login.html">Login</a></li>
                 </ul>
             </nav>
         </header>
 
-        <!-- CONFIGURAÇÕES -->
         <section class="grade">
-
             <article class="cartao">
                 <h2>Configurar chamada</h2>
-                <form method = "GET" action = "/chamada/">
 
                 <div class="formulario">
                     <label>
                         Data
-                        <input type="date" name="data" id="data-chamada">
+                        <input type="date" id="data-chamada">
                     </label>
 
                     <label>
                         Turma
-                        <select id="filtro-turma" name="turma"> <option value="todas">Todas</option>
-                            {% for t in turmas %}
-                            <option value="{{ t }}" {% if t == turma_selecionada %}selected{% endif %}>
-                                {{ t }}
-                            </option>
-                            {% endfor %}
+                        <select id="filtro-turma">
+                            <option value="">Todas as turmas</option>
                         </select>
                     </label>
 
-                    <button class="botao botao-secundario">
+                    <button type="button" class="botao botao-secundario">
                         Atualizar lista
                     </button>
                 </div>
-                </form>
             </article>
 
-            <!-- RESUMO -->
             <article class="cartao">
                 <h2>Resumo</h2>
 
@@ -82,15 +71,11 @@
                     </div>
                 </div>
             </article>
-
         </section>
 
-        <!-- TABELA -->
         <section class="cartao cartao-tabela">
             <h2>Lista de alunos</h2>
-        <form method="POST" action="/chamada/">
-        
-        <input type="hidden" name="data_presenca" value="{{ request.GET.data }}">
+
             <div class="tabela-area">
                 <table>
                     <thead>
@@ -98,80 +83,41 @@
                             <th>Aluno</th>
                             <th>Turma</th>
                             <th>Status</th>
-                            <th>Ação</th>
                         </tr>
                     </thead>
 
                     <tbody>
-
-                        <tr>
-                            <td><strong>{{ aluno.nome }}</strong></td>
-                            <td><span class="tag-turma">{{ aluno.turma }}</span></td>
-                            <td>
-                                <div class="opcoes-presenca">
-
-                                    <label class="radio-status presente">
-                                        <input type="radio" name="status_{{ aluno.id }}" value="P" checked>
-                                        <span>P</span>
-                                    </label>
-
-                                    <label class="radio-status falta">
-                                        <input type="radio" name="status_{{ aluno.id }}" value="F">
-
-                                        <span>F</span>
-                                    </label>
-
-                                    <label class="radio-status atraso">
-                                        <input type="radio" name="status_{{ aluno.id }}" value="A">
-                                        <span>A</span>
-                                    </label>
-
-                                </div>
-                            </td>
-
-                            <td>
-                                <a href="/cadastro-aluno/" class="botao-acao editar">Editar</a>
-                            </td>
-
-                        </tr>
-                        
                         <tr>
                             <td colspan="3" style="text-align:center;">
-                                Nenhum aluno cadastrado no sistema ainda.
-                                Vá até a aba de Registro para cadastrar.
+                                Carregando alunos...
                             </td>
-                            
                         </tr>
-                        
-
                     </tbody>
                 </table>
             </div>
 
             <br>
-            
-            <button class="botao botao-principal">
+
+            <button type="button" class="botao botao-principal">
                 Salvar chamada
             </button>
-            </form>
         </section>
-
     </main>
-    <footer>
 
-    <nav>
-        <a href="index.html#sobre">Sobre</a>
-        <a href="index.html#contato">Contato</a>
-        
-        <span>| &copy; 2026 EduChamada - Gestão Inteligente |</span>
-        
-        
-        <a href="registro.html">Editar</a>
-        <a href="chamada.html">Turmas</a>
-        <a href="cadastro_aluno.html">Cadastro de Aluno</a>
-    </nav>
+    <footer>
+        <nav>
+            <a href="/index.html#sobre">Sobre</a>
+            <a href="/index.html#contato">Contato</a>
+
+            <span>| &copy; 2026 EduChamada - Gestão Inteligente |</span>
+
+            <a href="/registro.html">Editar</a>
+            <a href="/chamada.html">Turmas</a>
+            <a href="/cadastro_aluno.html">Cadastro de Aluno</a>
+        </nav>
     </footer>
-    <script src="app.js"></script>
+    <script src="/app.js"></script>
 </body>
 
 </html>
+

@@ -25,16 +25,27 @@ SESSOES = {}
 ROTAS_HTML = {
     "/": "index.html",
     "/index.html": "index.html",
+    "/index": "index.html",
+    "/index/": "index.html",
     "/inicio": "index.html",
     "/inicio.html": "index.html",
+    "/inicio/": "index.html",
     "/login": "login.html",
     "/login.html": "login.html",
+    "/login/": "login.html",
     "/cadastro": "cadastro.html",
     "/cadastro.html": "cadastro.html",
+    "/cadastro/": "cadastro.html",
     "/cadastro-aluno": "cadastro_aluno.html",
+    "/cadastro-aluno/": "cadastro_aluno.html",
     "/cadastro_aluno.html": "cadastro_aluno.html",
+    "/cadastro_aluno/": "cadastro_aluno.html",
     "/chamada": "chamada.html",
     "/chamada.html": "chamada.html",
+    "/chamada/": "chamada.html",
+    "/registro": "registro.html",
+    "/registro.html": "registro.html",
+    "/registro/": "registro.html",
 }
 
 mimetypes.add_type("application/javascript", ".js")
@@ -1244,8 +1255,11 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             if rota.path == "/api/auth/eu":
                 return self.api_auth_eu()
 
-            if rota.path == "/tarefas":
+            if rota.path == "/api/tarefas" or rota.path == "/tarefas":
                 return self.api_listar_tarefas()
+
+            if rota.path.startswith("/api/tarefas/"):
+                return self.api_buscar_tarefa_por_id(rota.path.replace("/api", "", 1))
 
             if rota.path.startswith("/tarefas/"):
                 return self.api_buscar_tarefa_por_id(rota.path)
@@ -1283,7 +1297,7 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             if rota.path == "/api/auth/logout":
                 return self.api_auth_logout()
 
-            if rota.path == "/tarefas":
+            if rota.path == "/api/tarefas" or rota.path == "/tarefas":
                 return self.api_criar_tarefa()
 
             self.enviar_json({"erro": "Rota nao encontrada."}, status=404)
@@ -1297,6 +1311,9 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
 
             if rota.path.startswith("/tarefas/"):
                 return self.api_atualizar_tarefa(rota.path)
+
+            if rota.path.startswith("/api/tarefas/"):
+                return self.api_atualizar_tarefa(rota.path.replace("/api", "", 1))
 
             if rota.path.startswith("/api/alunos/"):
                 return self.api_atualizar_aluno(rota.path)
@@ -1312,6 +1329,9 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
 
             if rota.path.startswith("/tarefas/"):
                 return self.api_remover_tarefa(rota.path)
+
+            if rota.path.startswith("/api/tarefas/"):
+                return self.api_remover_tarefa(rota.path.replace("/api", "", 1))
 
             if rota.path.startswith("/api/alunos/"):
                 return self.api_remover_aluno(rota.path)
@@ -1796,3 +1816,4 @@ def executar():
 
 if __name__ == "__main__":
     executar()
+
