@@ -89,7 +89,6 @@
         <section class="cartao cartao-tabela">
             <h2>Lista de alunos</h2>
         <form method="POST" action="/chamada/">
-        {% csrf_token %}
         
         <input type="hidden" name="data_presenca" value="{{ request.GET.data }}">
             <div class="tabela-area">
@@ -104,7 +103,6 @@
                     </thead>
 
                     <tbody>
-                        {% for aluno in alunos %}
 
                         <tr>
                             <td><strong>{{ aluno.nome }}</strong></td>
@@ -136,7 +134,7 @@
                             </td>
 
                         </tr>
-                        {% empty %}
+                        
                         <tr>
                             <td colspan="3" style="text-align:center;">
                                 Nenhum aluno cadastrado no sistema ainda.
@@ -144,18 +142,17 @@
                             </td>
                             
                         </tr>
-                        {% endfor %}
+                        
 
                     </tbody>
                 </table>
             </div>
 
             <br>
-            {% if alunos %}
+            
             <button class="botao botao-principal">
                 Salvar chamada
             </button>
-            {% endif %}
             </form>
         </section>
 
