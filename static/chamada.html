@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chamada - EduChamada</title>
-    <link rel="stylesheet" href="static/chamada.css">
+    <link rel="stylesheet" href="chamada.css">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -35,18 +35,19 @@
 
             <article class="cartao">
                 <h2>Configurar chamada</h2>
+                <form method = "GET" action = "/chamada/">
 
                 <div class="formulario">
                     <label>
                         Data
-                        <input type="date" id="data-chamada">
+                        <input type="date" name="data" id="data-chamada">
                     </label>
 
                     <label>
                         Turma
                         <select id="filtro-turma" name="turma"> <option value="todas">Todas</option>
                             {% for t in turmas %}
-                            <option value="{{ t }}" {% ifequal t turma_selecionada %}selected{% endifequal %}>
+                            <option value="{{ t }}" {% if t == turma_selecionada %}selected{% endif %}>
                                 {{ t }}
                             </option>
                             {% endfor %}
@@ -57,6 +58,7 @@
                         Atualizar lista
                     </button>
                 </div>
+                </form>
             </article>
 
             <!-- RESUMO -->
@@ -86,7 +88,10 @@
         <!-- TABELA -->
         <section class="cartao cartao-tabela">
             <h2>Lista de alunos</h2>
-
+        <form method="POST" action="/chamada/">
+        {% csrf_token %}
+        
+        <input type="hidden" name="data_presenca" value="{{ request.GET.data }}">
             <div class="tabela-area">
                 <table>
                     <thead>
@@ -94,12 +99,13 @@
                             <th>Aluno</th>
                             <th>Turma</th>
                             <th>Status</th>
+                            <th>Ação</th>
                         </tr>
                     </thead>
 
                     <tbody>
+                        {% for aluno in alunos %}
 
-                        <!-- ALUNO 1 -->
                         <tr>
                             <td><strong>{{ aluno.nome }}</strong></td>
                             <td><span class="tag-turma">{{ aluno.turma }}</span></td>
@@ -126,9 +132,7 @@
                             </td>
 
                             <td>
-                                <a href="registro.html" class="botao-acao editar">
-                                      Editar
-                                </a>
+                                <a href="/cadastro-aluno/" class="botao-acao editar">Editar</a>
                             </td>
 
                         </tr>
@@ -139,11 +143,6 @@
                                 Vá até a aba de Registro para cadastrar.
                             </td>
                             
-                            <td>
-                                <a href="registro.html" class="botao-acao editar">
-                                  Editar
-                                </a>
-                            </td>
                         </tr>
                         {% endfor %}
 
@@ -152,37 +151,28 @@
             </div>
 
             <br>
-
+            {% if alunos %}
             <button class="botao botao-principal">
                 Salvar chamada
             </button>
-
+            {% endif %}
+            </form>
         </section>
 
     </main>
     <footer>
-<<<<<<< HEAD
-        <nav>
-            <a href="#sobre">Sobre</a>
-            <a href="#contato">Contato</a>
 
-            <span>| &copy; 2026 EduChamada - Gestão Inteligente |</span>
-
-            <a href="chamada.html">Turmas</a>
-            <a href="cadastro_aluno.html">Cadastro de Aluno</a>
-        </nav>
-=======
     <nav>
         <a href="index.html#sobre">Sobre</a>
         <a href="index.html#contato">Contato</a>
-        <a href="registro.html">Editar</a>
         
         <span>| &copy; 2026 EduChamada - Gestão Inteligente |</span>
         
+        
+        <a href="registro.html">Editar</a>
         <a href="chamada.html">Turmas</a>
         <a href="cadastro_aluno.html">Cadastro de Aluno</a>
     </nav>
->>>>>>> 024e0e1005a5eeb010f547129bb6759fdc8c490b
     </footer>
     <script src="app.js"></script>
 </body>
