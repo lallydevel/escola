@@ -3,86 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduChamada</title>
+    <title>Registro - EduChamada</title>
     <link rel="stylesheet" href="/index.css">
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/registro.css">
 </head>
 <body>
     <header>
-            <div class="logo">
-                <a href="/index.html">
-                    <h1>EduChamada</h1>
-                </a>
-            </div>
+        <div class="logo">
+            <a href="/index.html">
+                <h1>EduChamada</h1>
+            </a>
+        </div>
 
-            <nav>
-                <ul>
-                    <li><a href="/index.html">Início</a></li>
-                    <li><a href="/chamada.html">Realizar Chamada</a></li>
-                    <li><a href="/cadastro.html">Cadastro</a></li>
-                    <li><a href="/login.html">Login</a></li>
-                </ul>
-            </nav>
-        </header>
-        <main class="pagg">
+        <nav>
+            <ul>
+                <li><a href="/index.html">Inicio</a></li>
+                <li><a href="/chamada.html">Realizar Chamada</a></li>
+                <li><a href="/cadastro.html">Cadastro</a></li>
+                <li><a href="/login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
 
-    <div class="cartao">
-        <h2>Editar aluno</h2>
+    <main class="pagg">
+        <section class="registro-grid">
+            <article class="cartao cartao-info">
+                <h2>Informacoes da conta</h2>
+                <p>Estes dados sao fixos e exibem o usuario logado.</p>
 
-        <form class="formulario">
+                <dl class="lista-info">
+                    <div><dt>Nome:</dt><dd id="info-usuario-nome">-</dd></div>
+                    <div><dt>Tipo:</dt><dd id="info-usuario-tipo">-</dd></div>
+                    <div><dt>Email:</dt><dd id="info-usuario-email">-</dd></div>
+                    <div><dt>Turma:</dt><dd id="info-usuario-turma">-</dd></div>
+                    <div><dt>CPF:</dt><dd id="info-usuario-cpf">-</dd></div>
+                    <div><dt>Nascimento:</dt><dd id="info-usuario-nascimento">-</dd></div>
+                </dl>
+            </article>
 
-            <label>
-                Nome do Aluno
-                <input type="text" placeholder="Nome">
-            </label>
+            <article class="cartao">
+                <h2>Editar registro</h2>
+                <p>
+                    Professor pode editar todos os campos.
+                    Aluno pode editar apenas email, endereco e responsavel.
+                </p>
 
-            <label>
-                    Turma
-                <select name="turma">
-                    <option value="">Selecione a turma</option>
-                    <option value="Dv. Sistemas - 2026">Dv. Sistemas - 2026</option>
-                    <option value="Administração - 2026">Administração - 2026</option>
-                </select>
-            </label>
+                <div id="registro-painel-professor" class="painel-professor" style="display:none;">
+                    <label for="registro-aluno-select">Selecionar aluno</label>
+                    <select id="registro-aluno-select"></select>
+                </div>
 
-            <h3>Segurança</h3>
+                <form id="form-registro" class="formulario">
+                    <input type="hidden" id="registro-aluno-id">
 
-            <label>
-                Senha atual
-                <input type="password">
-            </label>
+                    <label>
+                        Nome
+                        <input type="text" id="registro-nome" required>
+                    </label>
 
-            <label>
-                Nova senha
-                <input type="password">
-            </label>
+                    <label>
+                        Turma
+                        <select id="registro-turma" required>
+                            <option value="">Selecione a turma</option>
+                        </select>
+                    </label>
 
-            <button type="submit" class="botao btn-principal">
-                Salvar alterações
-            </button>
+                    <label>
+                        Nascimento
+                        <input type="date" id="registro-nascimento">
+                    </label>
 
-            <button type="button" class="botao btn-deletar" id="btn-deletar">
-                Excluir aluno
-            </button>
+                    <label>
+                        CPF
+                        <input type="text" id="registro-cpf" placeholder="00000000000">
+                    </label>
 
-        </form>
-    </div>
-</main>
+                    <label>
+                        Professor
+                        <input type="text" id="registro-professor">
+                    </label>
+
+                    <label>
+                        Endereco
+                        <input type="text" id="registro-endereco">
+                    </label>
+
+                    <label>
+                        Email
+                        <input type="email" id="registro-email">
+                    </label>
+
+                    <label>
+                        Responsavel
+                        <input type="text" id="registro-responsavel">
+                    </label>
+
+                    <label>
+                        Adicionado por administrador
+                        <input type="text" id="registro-admin-flag" readonly>
+                    </label>
+
+                    <button type="submit" class="botao btn-principal">Salvar alteracoes</button>
+                    <button type="button" class="botao btn-deletar" id="registro-btn-excluir">Excluir aluno</button>
+                </form>
+            </article>
+        </section>
+    </main>
 
     <footer>
-    <nav>
-        <a href="/index.html#sobre">Sobre</a>
-        <a href="/index.html#contato">Contato</a>
-        
-        <span>| &copy; 2026 EduChamada - Gestão Inteligente |</span>
-        
-        
-        <a href="/registro.html">Editar</a>
-        <a href="/chamada.html">Turmas</a>
-        <a href="/cadastro_aluno.html">Cadastro de Aluno</a>
-    </nav>
+        <nav>
+            <a href="/index.html#sobre">Sobre</a>
+            <a href="/index.html#contato">Contato</a>
+            <span>| &copy; 2026 EduChamada - Gestao Inteligente |</span>
+            <a href="/registro.html">Editar</a>
+            <a href="/chamada.html">Turmas</a>
+            <a href="/cadastro_aluno.html">Cadastro de Aluno</a>
+        </nav>
     </footer>
+
     <script src="/app.js"></script>
 </body>
 </html>

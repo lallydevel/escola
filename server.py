@@ -748,6 +748,7 @@ def linha_aluno(linha):
     aluno = dict(linha)
     for campo in ("nascimento", "cpf", "professor", "endereco", "email", "responsavel"):
         aluno[campo] = aluno.get(campo) or ""
+    aluno["adicionado_por_admin"] = bool(aluno.get("adicionado_por_admin", False))
     return aluno
 
 
@@ -769,6 +770,58 @@ def linha_usuario_publica(linha):
     }
 
 
+def identidades_usuarios_aluno(conexao):
+    linhas = conexao.execute(
+        """
+        SELECT LOWER(email) AS email, cpf
+        FROM usuarios
+        WHERE tipo = 'aluno'
+        """
+    ).fetchall()
+
+    emails = {texto_limpo(linha["email"]).lower() for linha in linhas if texto_limpo(linha["email"])}
+    cpfs = {texto_limpo(linha["cpf"]) for linha in linhas if texto_limpo(linha["cpf"])}
+    return emails, cpfs
+
+
+def marcar_aluno_adicionado_por_admin(aluno, emails_usuarios, cpfs_usuarios):
+    email = texto_limpo(aluno.get("email")).lower()
+    cpf = texto_limpo(aluno.get("cpf"))
+    tem_vinculo_usuario = (email and email in emails_usuarios) or (cpf and cpf in cpfs_usuarios)
+    aluno["adicionado_por_admin"] = not tem_vinculo_usuario
+    return aluno
+
+
+def listar_turmas():
+    with conectar_banco() as conexao:
+        turmas = {
+            texto_limpo(linha["turma"])
+            for linha in conexao.execute(
+                """
+                SELECT turma
+                FROM alunos
+                WHERE TRIM(COALESCE(turma, '')) <> ''
+                """
+            ).fetchall()
+        }
+        turmas.update(
+            {
+                texto_limpo(linha["turma"])
+                for linha in conexao.execute(
+                    """
+                    SELECT turma
+                    FROM usuarios
+                    WHERE tipo = 'aluno'
+                      AND TRIM(COALESCE(turma, '')) <> ''
+                    """
+                ).fetchall()
+            }
+        )
+
+    turmas = [turma for turma in turmas if turma]
+    return sorted(turmas)
+
+
 def listar_alunos():
     with conectar_banco() as conexao:
         alunos = conexao.execute(
@@ -787,7 +840,14 @@ def listar_alunos():
             ORDER BY turma, nome
             """
         ).fetchall()
-    return [linha_aluno(aluno) for aluno in alunos]
+
+        emails_usuarios, cpfs_usuarios = identidades_usuarios_aluno(conexao)
+
+    resultado = []
+    for aluno in alunos:
+        dado = linha_aluno(aluno)
+        resultado.append(marcar_aluno_adicionado_por_admin(dado, emails_usuarios, cpfs_usuarios))
+    return resultado
 
 
 def buscar_aluno(aluno_id):
@@ -809,7 +869,12 @@ def buscar_aluno(aluno_id):
             """,
             (aluno_id,),
         ).fetchone()
-    return linha_aluno(aluno)
+        emails_usuarios, cpfs_usuarios = identidades_usuarios_aluno(conexao)
+
+    dado = linha_aluno(aluno)
+    if not dado:
+        return None
+    return marcar_aluno_adicionado_por_admin(dado, emails_usuarios, cpfs_usuarios)
 
 
 def buscar_aluno_por_email_ou_cpf(email, cpf):
@@ -846,7 +911,12 @@ def buscar_aluno_por_email_ou_cpf(email, cpf):
 
     with conectar_banco() as conexao:
         aluno = conexao.execute(consulta, valores).fetchone()
-    return linha_aluno(aluno)
+        emails_usuarios, cpfs_usuarios = identidades_usuarios_aluno(conexao)
+
+    dado = linha_aluno(aluno)
+    if not dado:
+        return None
+    return marcar_aluno_adicionado_por_admin(dado, emails_usuarios, cpfs_usuarios)
 
 
 def criar_aluno(dados):
@@ -876,27 +946,25 @@ def criar_aluno(dados):
                 dados["responsavel"],
             ),
         )
-        aluno = conexao.execute(
-            """
-            SELECT
-                id,
-                nome,
-                turma,
-                nascimento,
-                cpf,
-                professor,
-                endereco,
-                email,
-                responsavel
-            FROM alunos
-            WHERE id = ?
-            """,
-            (cursor.lastrowid,),
-        ).fetchone()
-    return linha_aluno(aluno)
+    return buscar_aluno(cursor.lastrowid)
 
 
 def atualizar_aluno(aluno_id, dados):
+    existente = buscar_aluno(aluno_id)
+    if not existente:
+        return None
+
+    dados_atualizados = {
+        "nome": dados.get("nome", existente["nome"]),
+        "turma": dados.get("turma", existente["turma"]),
+        "nascimento": dados.get("nascimento", existente["nascimento"]),
+        "cpf": dados.get("cpf", existente["cpf"]),
+        "professor": dados.get("professor", existente["professor"]),
+        "endereco": dados.get("endereco", existente["endereco"]),
+        "email": dados.get("email", existente["email"]),
+        "responsavel": dados.get("responsavel", existente["responsavel"]),
+    }
+
     with conectar_banco() as conexao:
         cursor = conexao.execute(
             """
@@ -913,40 +981,21 @@ def atualizar_aluno(aluno_id, dados):
             WHERE id = ?
             """,
             (
-                dados["nome"],
-                dados["turma"],
-                dados["nascimento"],
-                dados["cpf"],
-                dados["professor"],
-                dados["endereco"],
-                dados["email"],
-                dados["responsavel"],
+                dados_atualizados["nome"],
+                dados_atualizados["turma"],
+                dados_atualizados["nascimento"],
+                dados_atualizados["cpf"],
+                dados_atualizados["professor"],
+                dados_atualizados["endereco"],
+                dados_atualizados["email"],
+                dados_atualizados["responsavel"],
                 aluno_id,
             ),
         )
 
         if cursor.rowcount == 0:
             return None
-
-        aluno = conexao.execute(
-            """
-            SELECT
-                id,
-                nome,
-                turma,
-                nascimento,
-                cpf,
-                professor,
-                endereco,
-                email,
-                responsavel
-            FROM alunos
-            WHERE id = ?
-            """,
-            (aluno_id,),
-        ).fetchone()
-
-    return linha_aluno(aluno)
+    return buscar_aluno(aluno_id)
 
 
 def criar_ou_atualizar_aluno_de_cadastro(dados):
@@ -1230,6 +1279,40 @@ def remover_sessao(token):
         SESSOES.pop(token, None)
 
 
+def atualizar_usuario_por_id(usuario_id, campos):
+    if not campos:
+        return buscar_usuario_por_id(usuario_id)
+
+    permitidos = {
+        "nome",
+        "email",
+        "turma",
+        "disciplinas_turmas",
+        "cpf",
+        "nascimento",
+    }
+    campos_validos = {chave: valor for chave, valor in campos.items() if chave in permitidos}
+    if not campos_validos:
+        return buscar_usuario_por_id(usuario_id)
+
+    colunas = ", ".join(f"{chave} = ?" for chave in campos_validos.keys())
+    valores = list(campos_validos.values()) + [usuario_id]
+
+    with conectar_banco() as conexao:
+        cursor = conexao.execute(
+            f"""
+            UPDATE usuarios
+            SET {colunas}
+            WHERE id = ?
+            """,
+            valores,
+        )
+        if cursor.rowcount == 0:
+            return None
+
+    return buscar_usuario_por_id(usuario_id)
+
+
 class ListaChamadaHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(204)
@@ -1254,6 +1337,12 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
 
             if rota.path == "/api/auth/eu":
                 return self.api_auth_eu()
+
+            if rota.path == "/api/turmas":
+                return self.api_listar_turmas()
+
+            if rota.path == "/api/perfil-aluno":
+                return self.api_perfil_aluno()
 
             if rota.path == "/api/tarefas" or rota.path == "/tarefas":
                 return self.api_listar_tarefas()
@@ -1308,6 +1397,9 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
     def do_PUT(self):
         try:
             rota = urlparse(self.path)
+
+            if rota.path == "/api/perfil-aluno":
+                return self.api_atualizar_perfil_aluno()
 
             if rota.path.startswith("/tarefas/"):
                 return self.api_atualizar_tarefa(rota.path)
@@ -1372,8 +1464,13 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
         )
 
     def servir_app_js(self):
+        caminho = STATIC_DIR / "app.js"
+        if not caminho.exists() or caminho.is_dir():
+            self.enviar_json({"erro": "Arquivo app.js nao encontrado."}, status=404)
+            return
+
         self.enviar_bytes(
-            APP_JS.encode("utf-8"),
+            caminho.read_bytes(),
             "application/javascript; charset=utf-8",
             cabecalhos_extras={"Cache-Control": "no-store"},
         )
@@ -1452,11 +1549,57 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             return None
         return buscar_usuario_por_id(usuario_id)
 
+    def exigir_usuario_logado(self):
+        usuario = self.usuario_logado()
+        if not usuario:
+            self.enviar_json({"erro": "Sessao nao encontrada. Faça login novamente."}, status=401)
+            return None
+        return usuario
+
+    def exigir_professor(self):
+        usuario = self.exigir_usuario_logado()
+        if not usuario:
+            return None
+        if usuario.get("tipo") != "professor":
+            self.enviar_json({"erro": "Acesso permitido somente para professor."}, status=403)
+            return None
+        return usuario
+
+    def turma_usuario_aluno(self, usuario):
+        if not usuario or usuario.get("tipo") != "aluno":
+            return ""
+        return texto_limpo(usuario.get("turma"))
+
     # ----- API ALUNOS -----
 
     def api_listar_alunos(self):
+        usuario = self.exigir_usuario_logado()
+        if not usuario:
+            return
+
         alunos = listar_alunos()
-        turmas = sorted({aluno["turma"] for aluno in alunos if aluno["turma"]})
+        turmas = listar_turmas()
+
+        # Aluno so pode visualizar (somente leitura) e apenas a propria turma.
+        if usuario.get("tipo") == "aluno":
+            turma_aluno = self.turma_usuario_aluno(usuario)
+            if turma_aluno:
+                alunos = [aluno for aluno in alunos if aluno["turma"] == turma_aluno]
+                turmas = [turma_aluno]
+            else:
+                alunos = []
+                turmas = []
+
+        # Para aluno, escondemos campos sensiveis.
+        if usuario.get("tipo") == "aluno":
+            alunos = [
+                {
+                    "id": aluno["id"],
+                    "nome": aluno["nome"],
+                    "turma": aluno["turma"],
+                }
+                for aluno in alunos
+            ]
 
         turma_filtro = parse_qs(urlparse(self.path).query).get("turma", [""])[0].strip()
         if turma_filtro:
@@ -1467,6 +1610,10 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
         self.enviar_json({"alunos": alunos, "turmas": turmas})
 
     def api_buscar_aluno_por_id(self, path):
+        usuario = self.exigir_usuario_logado()
+        if not usuario:
+            return
+
         aluno_id_texto = self.id_da_rota(path, "/api/alunos")
         if not aluno_id_texto:
             self.enviar_json({"erro": "Rota nao encontrada."}, status=404)
@@ -1483,9 +1630,20 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             self.enviar_json({"erro": "Aluno nao encontrado."}, status=404)
             return
 
+        if usuario.get("tipo") == "aluno":
+            turma_aluno = self.turma_usuario_aluno(usuario)
+            if not turma_aluno or aluno.get("turma") != turma_aluno:
+                self.enviar_json({"erro": "Acesso negado para visualizar este aluno."}, status=403)
+                return
+            aluno = {"id": aluno["id"], "nome": aluno["nome"], "turma": aluno["turma"]}
+
         self.enviar_json({"aluno": aluno})
 
     def api_criar_aluno(self):
+        usuario = self.exigir_professor()
+        if not usuario:
+            return
+
         try:
             dados = validar_dados_aluno(self.ler_json())
         except ValueError as erro:
@@ -1496,6 +1654,10 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
         self.enviar_json({"mensagem": "Aluno cadastrado com sucesso.", "aluno": aluno}, status=201)
 
     def api_atualizar_aluno(self, path):
+        usuario = self.exigir_professor()
+        if not usuario:
+            return
+
         aluno_id_texto = self.id_da_rota(path, "/api/alunos")
         if not aluno_id_texto:
             self.enviar_json({"erro": "Rota nao encontrada."}, status=404)
@@ -1516,6 +1678,10 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
         self.enviar_json({"mensagem": "Aluno atualizado com sucesso.", "aluno": aluno})
 
     def api_remover_aluno(self, path):
+        usuario = self.exigir_professor()
+        if not usuario:
+            return
+
         aluno_id_texto = self.id_da_rota(path, "/api/alunos")
         if not aluno_id_texto:
             self.enviar_json({"erro": "Rota nao encontrada."}, status=404)
@@ -1536,6 +1702,10 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
     # ----- API CHAMADA -----
 
     def api_buscar_chamada(self, query_string):
+        usuario = self.exigir_usuario_logado()
+        if not usuario:
+            return
+
         parametros = parse_qs(query_string)
         data_chamada = parametros.get("data", [""])[0]
 
@@ -1550,6 +1720,13 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             return
 
         alunos = listar_alunos()
+        if usuario.get("tipo") == "aluno":
+            turma_aluno = self.turma_usuario_aluno(usuario)
+            if turma_aluno:
+                alunos = [aluno for aluno in alunos if aluno["turma"] == turma_aluno]
+            else:
+                alunos = []
+
         chamada_atual = buscar_chamada(data_chamada)
         resumo = gerar_resumo(alunos, chamada_atual)
         registros = [
@@ -1557,9 +1734,17 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             for aluno_id, status in chamada_atual.items()
         ]
 
+        if usuario.get("tipo") == "aluno":
+            ids_permitidos = {aluno["id"] for aluno in alunos}
+            registros = [registro for registro in registros if registro["aluno_id"] in ids_permitidos]
+
         self.enviar_json({"data": data_chamada, "registros": registros, "resumo": resumo})
 
     def api_salvar_chamada(self):
+        usuario = self.exigir_professor()
+        if not usuario:
+            return
+
         try:
             dados = self.ler_json()
         except ValueError as erro:
@@ -1609,6 +1794,9 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
         self.enviar_json({"mensagem": "Chamada salva com sucesso.", "resumo": resumo})
 
     # ----- API AUTH -----
+
+    def api_listar_turmas(self):
+        self.enviar_json({"turmas": listar_turmas()})
 
     def api_auth_cadastro(self):
         try:
@@ -1709,6 +1897,72 @@ class ListaChamadaHandler(BaseHTTPRequestHandler):
             return
 
         self.enviar_json({"usuario": usuario})
+
+    def api_perfil_aluno(self):
+        usuario = self.exigir_usuario_logado()
+        if not usuario:
+            return
+
+        if usuario.get("tipo") != "aluno":
+            self.enviar_json({"erro": "Endpoint disponivel apenas para aluno."}, status=403)
+            return
+
+        aluno = buscar_aluno_por_email_ou_cpf(usuario.get("email"), usuario.get("cpf"))
+        if not aluno:
+            self.enviar_json({"erro": "Aluno vinculado nao encontrado."}, status=404)
+            return
+
+        self.enviar_json({"aluno": aluno})
+
+    def api_atualizar_perfil_aluno(self):
+        usuario = self.exigir_usuario_logado()
+        if not usuario:
+            return
+
+        if usuario.get("tipo") != "aluno":
+            self.enviar_json({"erro": "Endpoint disponivel apenas para aluno."}, status=403)
+            return
+
+        aluno = buscar_aluno_por_email_ou_cpf(usuario.get("email"), usuario.get("cpf"))
+        if not aluno:
+            self.enviar_json({"erro": "Aluno vinculado nao encontrado."}, status=404)
+            return
+
+        try:
+            dados = self.ler_json()
+        except ValueError as erro:
+            self.enviar_json({"erro": str(erro)}, status=400)
+            return
+
+        # Aluno altera somente seus dados de contato.
+        try:
+            atualizacao = {
+                "email": validar_email(dados.get("email")) if texto_limpo(dados.get("email")) else aluno["email"],
+                "endereco": texto_limpo(dados.get("endereco")) or aluno["endereco"],
+                "responsavel": texto_limpo(dados.get("responsavel")) or aluno["responsavel"],
+            }
+        except ValueError as erro:
+            self.enviar_json({"erro": str(erro)}, status=400)
+            return
+
+        try:
+            aluno_atualizado = atualizar_aluno(aluno["id"], atualizacao)
+        except ValueError as erro:
+            self.enviar_json({"erro": str(erro)}, status=400)
+            return
+
+        if not aluno_atualizado:
+            self.enviar_json({"erro": "Nao foi possivel atualizar o perfil do aluno."}, status=400)
+            return
+
+        # Mantem tabela de usuarios sincronizada para login por e-mail.
+        try:
+            atualizar_usuario_por_id(usuario["id"], {"email": aluno_atualizado["email"]})
+        except sqlite3.IntegrityError:
+            self.enviar_json({"erro": "Ja existe outro usuario com este e-mail."}, status=400)
+            return
+
+        self.enviar_json({"mensagem": "Perfil atualizado com sucesso.", "aluno": aluno_atualizado})
 
     # ----- API TAREFAS -----
 

@@ -1,84 +1,142 @@
-/* ===== PÁGINA DE REGISTRO / EDIÇÃO ===== */
-
 .pagg {
-    padding: 100px 60px 20px;
-    display: flex;
-    justify-content: center;
-    background-color: #F9FAFB;
-    min-height: auto;
+    padding: 100px 24px 96px;
+    background: #f5f7fb;
+    min-height: 100vh;
 }
 
-.pagg .cartao {
-    background: #fff;
-    padding: 20px;
+.registro-grid {
+    max-width: 1160px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 20px;
+}
+
+.cartao {
+    background: #ffffff;
     border-radius: 14px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-    width: 100%;
-    max-width: 515px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    padding: 22px;
 }
 
-.pagg .formulario {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    padding: 0;
-    background: transparent;
-    box-shadow: none;
+.cartao h2 {
+    color: #2f3565;
+    margin-bottom: 8px;
 }
 
-.pagg .formulario label {
-    display: flex;
-    flex-direction: column;
+.cartao p {
+    color: #5d637d;
     font-size: 14px;
-    font-weight: 600;
-    color: #374151;
+    margin-bottom: 16px;
+    line-height: 1.45;
 }
 
-.pagg .formulario input {
-    margin-top: 6px;
-    padding: 12px;
-    border: 1px solid #D1D5DB;
-    border-radius: 8px;
-}
-
-.pagg .botao.btn-principal {
-    width: 100%;
-    padding: 14px;
-    background: #4F46E5;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.pagg .botao.btn-principal:hover {
-    background: #4338CA;
-}
-
-.acoes-formulario {
-    display: flex;
+.lista-info {
+    display: grid;
     gap: 10px;
-    margin-top: 15px;
 }
 
-.acoes-formulario .botao {
-    flex: 1;
-}
-
-/* botão deletar */
-.btn-deletar {
-    width: 100%;
-    padding: 14px;
-    background: #ef4444;
-    color: white;
+.lista-info div {
+    background: #f8f9ff;
+    border: 1px solid #e5e8f7;
     border-radius: 10px;
-    border: none;
-    cursor: pointer;
+    padding: 10px 12px;
+}
+
+.lista-info dt {
+    font-size: 12px;
+    color: #6a7297;
+    margin-bottom: 3px;
+}
+
+.lista-info dd {
+    margin: 0;
+    font-weight: 700;
+    color: #252949;
+    word-break: break-word;
+}
+
+.painel-professor {
+    margin-bottom: 14px;
+}
+
+.painel-professor label {
+    display: block;
+    color: #36406a;
     font-weight: 600;
-    transition: 0.2s;
+    margin-bottom: 6px;
+}
+
+.painel-professor select {
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 9px;
+    border: 1px solid #cfd5ea;
+}
+
+.formulario {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 14px;
+}
+
+.formulario label {
+    display: flex;
+    flex-direction: column;
+    color: #374067;
+    font-size: 13px;
+    font-weight: 700;
+    gap: 6px;
+}
+
+.formulario input,
+.formulario select {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #cfd5ea;
+    border-radius: 9px;
+    background: #fff;
+}
+
+.btn-principal,
+.btn-deletar {
+    grid-column: 1 / -1;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    padding: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-principal {
+    background: #4853d9;
+}
+
+.btn-principal:hover {
+    background: #3d47c0;
+}
+
+.btn-deletar {
+    background: #dc3f4c;
 }
 
 .btn-deletar:hover {
-    background: #dc2626;
+    background: #c7333f;
+}
+
+@media (max-width: 980px) {
+    .registro-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .pagg {
+        padding: 88px 14px 88px;
+    }
+
+    .formulario {
+        grid-template-columns: 1fr;
+    }
 }
